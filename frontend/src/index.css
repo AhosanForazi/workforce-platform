@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-concrete text-ink font-body antialiased;
+}
+
+::selection {
+  background: #FF6A2B;
+  color: #181611;
+}
+
+.font-display {
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* Ticket / work-order card signature element */
+.ticket {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 14px;
+}
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #F6F3EC;
+  border-radius: 999px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ticket::before { left: -11px; }
+.ticket::after { right: -11px; }
+
+.ticket-perf {
+  border-top: 2px dashed rgba(24,22,17,0.15);
+}
+
+.blueprint-bg {
+  background-color: #F6F3EC;
+  background-image:
+    linear-gradient(rgba(31,58,95,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31,58,95,0.07) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.stamp {
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  transform: rotate(-4deg);
+}
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+:focus-visible {
+  outline: 3px solid #FF6A2B;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
