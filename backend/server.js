@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 });
 
 // Health check with database connectivity info
-app.get('/api/health', async (req, res) => {
+const healthHandler = async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.json({
@@ -45,17 +45,27 @@ app.get('/api/health', async (req, res) => {
       error: err.message,
     });
   }
-});
+};
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/services', require('./routes/services'));
-app.use('/api/workers', require('./routes/workers'));
-app.use('/api/bookings', require('./routes/bookings'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/disputes', require('./routes/disputes'));
-app.use('/api/notifications', require('./routes/notifications'));
+// API route mappings (supports both /api/<resource> and /<resource> fallback)
+const routeList = [
+  ['auth', require('./routes/auth')],
+  ['users', require('./routes/users')],
+  ['services', require('./routes/services')],
+  ['workers', require('./routes/workers')],
+  ['bookings', require('./routes/bookings')],
+  ['payments', require('./routes/payments')],
+  ['reviews', require('./routes/reviews')],
+  ['disputes', require('./routes/disputes')],
+  ['notifications', require('./routes/notifications')],
+];
+
+routeList.forEach(([resource, router]) => {
+  app.use(`/api/${resource}`, router);
+  app.use(`/${resource}`, router);
+});
 
 app.use(notFound);
 app.use(errorHandler);
