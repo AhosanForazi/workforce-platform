@@ -14,6 +14,16 @@ app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Workforce Management System API',
+    status: 'active',
+    healthCheck: '/api/health',
+    version: '1.0.0',
+  });
+});
+
 // Health check with database connectivity info
 app.get('/api/health', async (req, res) => {
   try {
