@@ -10,7 +10,12 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_URL && process.env.CLIENT_URL !== '*'
+    ? process.env.CLIENT_URL.split(',').map(s => s.trim())
+    : true,
+  credentials: true,
+}));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
