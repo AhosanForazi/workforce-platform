@@ -13,7 +13,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
-import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { getAvatarUrl, getFallbackSvgAvatar } from '../utils/imageUrl';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -94,20 +94,18 @@ const Dashboard = () => {
       <div className="mb-10 flex items-center justify-between flex-wrap gap-6 ticket p-6 shadow-card border border-ink/10">
         <div className="flex items-center gap-4">
           <Link to="/profile" className="relative group shrink-0" title="Change profile photo">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-dispatch border-2 border-ink/15 flex items-center justify-center shadow-card group-hover:border-hazard transition-colors">
-              {user?.avatar ? (
-                <img
-                  src={getAvatarUrl(user.avatar)}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="font-display font-bold text-2xl text-concrete">
-                  {getInitials(user?.name)}
-                </span>
-              )}
+            {/* Round Shape Profile Avatar Frame */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-dispatch border-4 border-panel ring-3 ring-hazard/50 flex items-center justify-center shadow-card group-hover:ring-hazard group-hover:scale-105 transition-all">
+              <img
+                src={getAvatarUrl(user?.avatar, user?.role === 'worker' ? 'Worker' : '', user?.name)}
+                alt={user?.name || 'User'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = getFallbackSvgAvatar(user?.name);
+                }}
+              />
             </div>
-            <span className="absolute -bottom-1 -right-1 p-1 rounded-full bg-hazard text-ink text-xs shadow group-hover:scale-110 transition-transform">
+            <span className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-hazard text-ink text-xs shadow-md group-hover:scale-110 transition-transform border border-panel">
               <HiOutlineCamera />
             </span>
           </Link>

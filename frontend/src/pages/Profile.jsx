@@ -12,13 +12,17 @@ import {
 } from 'react-icons/hi';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { getAvatarUrl, getFallbackSvgAvatar, TRADE_AVATARS } from '../utils/imageUrl';
 
-const SAMPLE_AVATARS = [
-  { label: 'Electrician', url: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80' },
-  { label: 'Painter', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
-  { label: 'Plumber', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { label: 'Carpenter', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' },
+const TRADE_PRESETS = [
+  { label: 'Electrician', url: TRADE_AVATARS.electrician },
+  { label: 'Plumber', url: TRADE_AVATARS.plumber },
+  { label: 'Painter', url: TRADE_AVATARS.painter },
+  { label: 'Carpenter', url: TRADE_AVATARS.carpenter },
+  { label: 'Cleaner', url: TRADE_AVATARS.cleaner },
+  { label: 'Gardener', url: TRADE_AVATARS.gardener },
+  { label: 'Technician', url: TRADE_AVATARS.technician },
+  { label: 'Welder', url: TRADE_AVATARS.welder },
 ];
 
 const Profile = () => {
@@ -228,6 +232,14 @@ const Profile = () => {
     }
   };
 
+  // Quick apply and save a trade portrait
+  const handleSelectPreset = async (presetUrl) => {
+    setImageUrlInput(presetUrl);
+    setPreviewUrl(presetUrl);
+    setImageLoadError(false);
+    await handleSaveUrl(presetUrl);
+  };
+
   const saveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -256,12 +268,15 @@ const Profile = () => {
   };
 
   const currentDisplayImage = previewUrl || avatar;
+  const displayImageSrc = imageLoadError
+    ? getFallbackSvgAvatar(form.name || user?.name)
+    : getAvatarUrl(currentDisplayImage, workerForm.service_type || user?.role, form.name || user?.name);
 
   return (
     <div className="max-w-2xl mx-auto px-5 md:px-8 py-14">
       <span className="font-mono text-xs tracking-widest text-hazard">// ACCOUNT SETTINGS</span>
       <h1 className="font-display font-bold text-4xl mt-2 mb-8">
-        {user?.role === 'worker' ? 'Worker Profile & Image' : 'Your Profile'}
+        {user?.role === 'worker' ? 'Worker Profile & Photo' : 'Your Profile'}
       </h1>
 
       {/* Profile Photo Management Card */}
@@ -270,18 +285,18 @@ const Profile = () => {
         animate={{ opacity: 1, y: 0 }}
         className="ticket p-7 shadow-card mb-8 border border-ink/10"
       >
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-lg bg-hazard/15 text-hazard">
               <HiOutlineCamera className="text-xl" />
             </span>
             <div>
               <h2 className="font-display font-bold text-xl leading-tight">
-                {user?.role === 'worker' ? 'Worker Profile Photo' : 'Profile Photo'}
+                {user?.role === 'worker' ? 'Worker Profile Photo (Round Frame)' : 'Profile Photo'}
               </h2>
               <p className="text-xs text-ink/60">
                 {user?.role === 'worker'
-                  ? 'Your photo will be featured on the dispatch board, worker cards, and booking tickets.'
+                  ? 'Your round profile image will appear on the dispatch board, worker tickets, and search cards.'
                   : 'Your avatar helps workers and support recognize your account.'}
               </p>
             </div>
@@ -293,33 +308,38 @@ const Profile = () => {
           )}
         </div>
 
-        {/* Current Image & Preview Showcase */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-4 rounded-xl bg-concrete/60 border border-ink/10">
+        {/* Current Image & Preview Showcase in Round Shape Frame */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-5 rounded-2xl bg-concrete/60 border border-ink/10 mb-6">
           <div className="relative group shrink-0">
-            <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-ink/15 shadow-card bg-dispatch flex items-center justify-center relative">
-              {currentDisplayImage && !imageLoadError ? (
-                <img
-                  src={getAvatarUrl(currentDisplayImage)}
-                  alt={form.name || 'Worker avatar'}
-                  className="w-full h-full object-cover"
-                  onError={() => setImageLoadError(true)}
-                />
-              ) : (
-                <span className="font-display font-bold text-4xl text-concrete">
-                  {getInitials(form.name || user?.name)}
-                </span>
-              )}
+            {/* Round Shape Profile Frame */}
+            <div className="w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-panel shadow-ticket ring-4 ring-hazard/60 bg-dispatch flex items-center justify-center relative">
+              <img
+                src={displayImageSrc}
+                alt={form.name || 'Worker avatar'}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={() => setImageLoadError(true)}
+              />
             </div>
 
             {/* Quick trigger to open file dialog on click */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute inset-0 rounded-2xl bg-ink/60 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+              className="absolute inset-0 rounded-full bg-ink/70 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer border-4 border-transparent"
               title="Click to choose a new photo"
             >
-              <HiOutlineCamera className="text-2xl mb-1 text-hazard" />
-              <span className="text-[11px] font-bold font-mono">CHANGE</span>
+              <HiOutlineCamera className="text-3xl mb-1 text-hazard" />
+              <span className="text-[10px] font-bold font-mono tracking-wider">CHANGE PHOTO</span>
+            </button>
+
+            {/* Camera badge pinned to round frame */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 p-2.5 rounded-full bg-hazard text-ink border-2 border-panel shadow-card hover:scale-110 transition-transform cursor-pointer"
+              title="Upload photo from device"
+            >
+              <HiOutlineCamera className="text-base" />
             </button>
           </div>
 
@@ -333,7 +353,7 @@ const Profile = () => {
               )}
             </div>
             <p className="text-xs text-ink/60">
-              Recommended: Square JPG, PNG, or WebP portrait. Max 5MB.
+              Round frame profile picture. Choose a preset trade portrait below or upload your own photo.
             </p>
 
             {previewUrl && (
@@ -343,13 +363,21 @@ const Profile = () => {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-ink/20 text-xs font-bold hover:bg-ink hover:text-concrete transition-colors"
               >
-                <HiOutlinePhotograph /> Choose from files
+                <HiOutlinePhotograph /> Upload from file
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setImageTab('presets')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-hazard/20 text-ink text-xs font-bold hover:bg-hazard transition-colors"
+              >
+                Select trade photo
               </button>
 
               {(avatar || previewUrl) && (
@@ -368,33 +396,44 @@ const Profile = () => {
 
         {/* Upload Mode Selector (Tabs) */}
         <div className="pt-2">
-          <div className="flex border-b border-ink/10 mb-4">
+          <div className="flex border-b border-ink/10 mb-4 overflow-x-auto">
             <button
               type="button"
               onClick={() => setImageTab('file')}
-              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 ${
+              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                 imageTab === 'file'
                   ? 'border-hazard text-ink'
                   : 'border-transparent text-ink/50 hover:text-ink'
               }`}
             >
-              <HiOutlineUpload className="text-sm" /> Upload image file
+              <HiOutlineUpload className="text-sm" /> 1. Upload from Device
+            </button>
+            <button
+              type="button"
+              onClick={() => setImageTab('presets')}
+              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
+                imageTab === 'presets'
+                  ? 'border-hazard text-ink'
+                  : 'border-transparent text-ink/50 hover:text-ink'
+              }`}
+            >
+              <HiOutlinePhotograph className="text-sm" /> 2. Trade Portraits (1-Click)
             </button>
             <button
               type="button"
               onClick={() => setImageTab('url')}
-              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 ${
+              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                 imageTab === 'url'
                   ? 'border-hazard text-ink'
                   : 'border-transparent text-ink/50 hover:text-ink'
               }`}
             >
-              <HiOutlineLink className="text-sm" /> Enter image URL
+              <HiOutlineLink className="text-sm" /> 3. Enter Image URL
             </button>
           </div>
 
           <AnimatePresence mode="wait">
-            {imageTab === 'file' ? (
+            {imageTab === 'file' && (
               <motion.div
                 key="tab-file"
                 initial={{ opacity: 0, y: 6 }}
@@ -439,7 +478,7 @@ const Profile = () => {
                     ) : (
                       <div>
                         <p className="font-semibold text-sm text-ink">
-                          Drag & drop your photo here, or <span className="text-hazard underline">browse</span>
+                          Drag & drop your photo here, or <span className="text-hazard underline">browse files</span>
                         </p>
                         <p className="text-xs text-ink/50 mt-1">JPEG, PNG, WebP or GIF up to 5MB</p>
                       </div>
@@ -477,7 +516,48 @@ const Profile = () => {
                   </div>
                 )}
               </motion.div>
-            ) : (
+            )}
+
+            {imageTab === 'presets' && (
+              <motion.div
+                key="tab-presets"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-ink/80">
+                    Click any portrait to instantly apply and save it to your profile:
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {TRADE_PRESETS.map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      disabled={uploadingImage}
+                      onClick={() => handleSelectPreset(s.url)}
+                      className="flex flex-col items-center p-3 rounded-xl border border-ink/10 hover:border-hazard hover:bg-hazard/10 hover:shadow-card transition-all text-center group bg-concrete/40"
+                    >
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-panel ring-2 ring-hazard/40 group-hover:ring-hazard shadow-sm mb-2">
+                        <img
+                          src={s.url}
+                          alt={s.label}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-ink group-hover:text-hazard transition-colors">
+                        {s.label}
+                      </span>
+                      <span className="text-[10px] text-ink/50 mt-0.5">1-click apply</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {imageTab === 'url' && (
               <motion.div
                 key="tab-url"
                 initial={{ opacity: 0, y: 6 }}
@@ -507,36 +587,6 @@ const Profile = () => {
                     >
                       {uploadingImage ? 'Saving…' : 'Save URL'}
                     </button>
-                  </div>
-                </div>
-
-                {/* Sample avatars for quick testing */}
-                <div>
-                  <span className="text-[11px] font-mono text-ink/50 uppercase tracking-wide block mb-2">
-                    Or select a professional trade preset:
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {SAMPLE_AVATARS.map((s) => (
-                      <button
-                        key={s.label}
-                        type="button"
-                        onClick={() => {
-                          setImageUrlInput(s.url);
-                          setPreviewUrl(s.url);
-                          setImageLoadError(false);
-                        }}
-                        className="flex items-center gap-2 p-2 rounded-lg border border-ink/10 hover:border-hazard hover:bg-hazard/5 transition-all text-left group"
-                      >
-                        <img
-                          src={s.url}
-                          alt={s.label}
-                          className="w-7 h-7 rounded-full object-cover shrink-0"
-                        />
-                        <span className="text-xs font-semibold text-ink/80 group-hover:text-ink truncate">
-                          {s.label}
-                        </span>
-                      </button>
-                    ))}
                   </div>
                 </div>
               </motion.div>

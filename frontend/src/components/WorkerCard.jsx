@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiOutlineLocationMarker, HiOutlineBadgeCheck, HiOutlineBriefcase } from 'react-icons/hi';
 import RatingStars from './RatingStars';
-import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { getAvatarUrl, getFallbackSvgAvatar } from '../utils/imageUrl';
 
 const WorkerCard = ({ worker, index = 0 }) => {
   const [imgError, setImgError] = useState(false);
@@ -27,28 +27,27 @@ const WorkerCard = ({ worker, index = 0 }) => {
     >
       <div className="p-5">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            {avatarUrl && !imgError ? (
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-dispatch shrink-0 border border-ink/10 shadow-sm relative group-hover:border-hazard transition-colors">
-                <img
-                  src={getAvatarUrl(avatarUrl)}
-                  alt={worker.user_id?.name || 'Worker'}
-                  className="w-full h-full object-cover"
-                  onError={() => setImgError(true)}
-                  loading="lazy"
-                />
-              </div>
-            ) : (
-              <div className="w-14 h-14 rounded-xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-xl shrink-0">
-                {getInitials(worker.user_id?.name)}
-              </div>
-            )}
+          <div className="flex items-center gap-3.5">
+            {/* Round Shape Worker Card Avatar Frame */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-dispatch shrink-0 border-2 border-panel ring-2 ring-hazard/40 shadow-sm relative group-hover:ring-hazard group-hover:scale-105 transition-all">
+              <img
+                src={
+                  imgError
+                    ? getFallbackSvgAvatar(worker.user_id?.name)
+                    : getAvatarUrl(avatarUrl, worker.service_type, worker.user_id?.name)
+                }
+                alt={worker.user_id?.name || 'Worker'}
+                className="w-full h-full object-cover"
+                onError={() => setImgError(true)}
+                loading="lazy"
+              />
+            </div>
             <div>
               <h3 className="font-display font-bold text-xl leading-tight flex items-center gap-1.5">
                 {worker.user_id?.name}
                 {worker.isVerified && <HiOutlineBadgeCheck className="text-signal text-lg" title="Verified" />}
               </h3>
-              <p className="text-xs text-ink/50 font-mono uppercase tracking-wide">{worker.service_type}</p>
+              <p className="text-xs text-hazard font-mono uppercase tracking-wide font-semibold">{worker.service_type}</p>
             </div>
           </div>
           <span className="stamp text-hazard text-[10px] font-bold px-2 py-0.5">{worker.experience}</span>

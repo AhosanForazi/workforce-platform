@@ -5,7 +5,7 @@ import { HiOutlineX, HiOutlineCalendar, HiOutlineLocationMarker } from 'react-ic
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { getAvatarUrl, getFallbackSvgAvatar } from '../utils/imageUrl';
 
 const BookingModal = ({ worker, offer, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -68,17 +68,17 @@ const BookingModal = ({ worker, offer, onClose, onSuccess }) => {
           </button>
           
           <div className="flex items-center gap-3.5 mb-5 pr-6">
-            {workerAvatarUrl ? (
+            {/* Round Shape Worker Avatar Frame */}
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-panel ring-2 ring-hazard/40 shrink-0 shadow-sm bg-dispatch flex items-center justify-center">
               <img
-                src={getAvatarUrl(workerAvatarUrl)}
-                alt={worker.user_id?.name || 'Worker'}
-                className="w-12 h-12 rounded-xl object-cover border border-ink/15 shrink-0 shadow-sm"
+                src={getAvatarUrl(workerAvatarUrl, worker?.service_type, worker?.user_id?.name)}
+                alt={worker?.user_id?.name || 'Worker'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = getFallbackSvgAvatar(worker?.user_id?.name);
+                }}
               />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-dispatch text-concrete flex items-center justify-center font-bold font-display text-lg shrink-0">
-                {getInitials(worker.user_id?.name)}
-              </div>
-            )}
+            </div>
             <div>
               <span className="font-mono text-[10px] tracking-widest text-hazard block">// NEW BOOKING TICKET</span>
               <h2 className="font-display font-bold text-xl leading-tight">Book {worker.user_id?.name}</h2>

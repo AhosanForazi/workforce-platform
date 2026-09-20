@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineLocationMarker, HiOutlineBadgeCheck, HiOutlineBriefcase, HiOutlineCalendar } from 'react-icons/hi';
+import {
+  HiOutlineLocationMarker,
+  HiOutlineBadgeCheck,
+  HiOutlineBriefcase,
+  HiOutlineCalendar,
+  HiOutlineCamera,
+  HiOutlinePhotograph,
+} from 'react-icons/hi';
 import api from '../api/axios';
 import RatingStars from '../components/RatingStars';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BookingModal from '../components/BookingModal';
-import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { useAuth } from '../context/AuthContext';
+import { getAvatarUrl, getFallbackSvgAvatar } from '../utils/imageUrl';
 import { DEMO_WORKERS } from '../utils/demoData';
 
 const WorkerProfilePage = () => {
@@ -62,40 +70,110 @@ const WorkerProfilePage = () => {
   if (loading) return <LoadingSpinner label="Pulling up the job ticket…" />;
   if (!data) return <div className="text-center py-24 text-ink/50">Worker not found.</div>;
 
+  const { user } = useAuth();
   const { profile, offers, availability } = data;
   const avatarUrl = profile.avatar || profile.profileImage || profile.user_id?.avatar;
+  const isOwnProfile =
+    user &&
+    (user.id === profile.user_id?._id ||
+      user._id === profile.user_id?._id ||
+      user.id === profile.user_id?.id ||
+      user.id === profile.userId ||
+      user._id === profile.userId);
+  const hasCustomAvatar = Boolean(profile.avatar || profile.profileImage || profile.user_id?.avatar);
+  const imageSrc = imgError
+    ? getFallbackSvgAvatar(profile.user_id?.name)
+    : getAvatarUrl(avatarUrl, profile.service_type, profile.user_id?.name);
 
   return (
     <div className="max-w-6xl mx-auto px-5 md:px-8 py-14">
       <div className="grid md:grid-cols-3 gap-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="md:col-span-2">
           <div className="ticket p-7 shadow-card">
-            <div className="flex items-start gap-5">
-              {avatarUrl && !imgError ? (
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-dispatch shrink-0 border-2 border-ink/10 shadow-card">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+              {/* Worker Profile Image with Round Shape Frame */}
+              <div className="relative shrink-0">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-concrete ring-4 ring-hazard/50 shadow-ticket bg-dispatch flex items-center justify-center relative group">
                   <img
-                    src={getAvatarUrl(avatarUrl)}
+                    src={imageSrc}
                     alt={profile.user_id?.name || 'Worker avatar'}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={() => setImgError(true)}
                   />
+
+                  {/* If viewing own profile, hover overlay to update photo */}
+                  {isOwnProfile && (
+                    <Link
+                      to="/profile"
+                      className="absolute inset-0 rounded-full bg-ink/70 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                      title="Update your worker profile photo"
+                    >
+                      <HiOutlineCamera className="text-3xl text-hazard mb-1" />
+                      <span className="text-[10px] font-bold font-mono tracking-wider">CHANGE PHOTO</span>
+                    </Link>
+                  )}
                 </div>
-              ) : (
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-3xl shrink-0">
-                  {getInitials(profile.user_id?.name)}
-                </div>
-              )}
+
+                {/* Verified worker badge pinned on round frame */}
+                {profile.isVerified && (
+                  <span
+                    className="absolute bottom-1 right-1 p-1.5 rounded-full bg-signal text-white border-2 border-concrete shadow-md"
+                    title="Verified worker"
+                  >
+                    <HiOutlineBadgeCheck className="text-xl" />
+                  </span>
+                )}
+
+                {/* Owner shortcut badge pinned on round frame */}
+                {isOwnProfile && (
+                  <Link
+                    to="/profile"
+                    className="absolute -top-1 -right-1 p-2 rounded-full bg-hazard text-ink border-2 border-concrete shadow-md hover:scale-110 transition-transform"
+                    title="Edit profile & photo"
+                  >
+                    <HiOutlineCamera className="text-base" />
+                  </Link>
+                )}
+              </div>
+
               <div className="flex-1">
-                <h1 className="font-display font-bold text-3xl flex items-center gap-2">
-                  {profile.user_id?.name}
-                  {profile.isVerified && <HiOutlineBadgeCheck className="text-signal text-2xl" title="Verified worker" />}
-                </h1>
-                <p className="text-hazard font-mono text-sm uppercase tracking-wide mt-1">{profile.service_type}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-ink/60">
-                  <RatingStars rating={profile.rating} count={profile.ratingCount} size="text-base" />
-                  <span className="flex items-center gap-1"><HiOutlineLocationMarker /> {profile.user_id?.location}</span>
-                  <span className="flex items-center gap-1"><HiOutlineBriefcase /> {profile.completedJobs} jobs completed</span>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <h1 className="font-display font-bold text-3xl sm:text-4xl flex items-center gap-2">
+                    {profile.user_id?.name}
+                    {profile.isVerified && (
+                      <HiOutlineBadgeCheck className="text-signal text-2xl inline-block" title="Verified worker" />
+                    )}
+                  </h1>
                 </div>
+
+                <p className="text-hazard font-mono text-sm uppercase tracking-wider mt-1.5 font-bold">
+                  {profile.service_type}
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-ink/70">
+                  <RatingStars rating={profile.rating} count={profile.ratingCount} size="text-base" />
+                  <span className="flex items-center gap-1">
+                    <HiOutlineLocationMarker /> {profile.user_id?.location || 'Location not specified'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <HiOutlineBriefcase /> {profile.completedJobs} jobs completed
+                  </span>
+                </div>
+
+                {/* Owner helpful banner */}
+                {isOwnProfile && !hasCustomAvatar && (
+                  <div className="mt-4 p-3 rounded-xl bg-hazard/15 border border-hazard/40 flex items-center justify-between flex-wrap gap-2 text-xs">
+                    <span className="text-ink font-medium">
+                      📸 You are currently using a default trade photo. Add your personal photo to stand out!
+                    </span>
+                    <Link
+                      to="/profile"
+                      className="px-3 py-1.5 rounded-lg bg-ink text-concrete font-bold hover:bg-hazard hover:text-ink transition-colors shrink-0"
+                    >
+                      Upload Custom Photo
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
