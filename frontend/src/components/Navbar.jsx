@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlineMenu, HiOutlineX, HiOutlineBell } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
+import { getAvatarUrl, getInitials } from '../utils/imageUrl';
 
 const navLinkClass = ({ isActive }) =>
   `relative px-1 py-2 font-medium text-sm tracking-wide transition-colors ${
@@ -53,14 +54,34 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
-              <NavLink to="/notifications" className="p-2 rounded-full hover:bg-ink/5 relative">
+              <NavLink to="/notifications" className="p-2 rounded-full hover:bg-ink/5 relative" title="Notifications">
                 <HiOutlineBell className="text-xl" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-hazard rounded-full animate-pulseDot" />
               </NavLink>
-              <span className="text-sm text-ink/60 font-mono">Hi, {user.name?.split(' ')[0]}</span>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-ink/5 transition-colors group"
+                title="Account profile"
+              >
+                {user.avatar ? (
+                  <img
+                    src={getAvatarUrl(user.avatar)}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full object-cover border border-ink/15 group-hover:border-hazard transition-colors"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : (
+                  <span className="w-7 h-7 rounded-full bg-dispatch text-concrete flex items-center justify-center font-bold text-xs">
+                    {getInitials(user.name, 1)}
+                  </span>
+                )}
+                <span className="text-sm text-ink/80 font-mono group-hover:text-hazard transition-colors">
+                  Hi, {user.name?.split(' ')[0]}
+                </span>
+              </Link>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-lg bg-ink text-concrete text-sm font-semibold hover:bg-hazard hover:text-ink transition-colors"
+                className="px-3.5 py-1.5 rounded-lg bg-ink text-concrete text-sm font-semibold hover:bg-hazard hover:text-ink transition-colors"
               >
                 Log out
               </button>
@@ -94,11 +115,37 @@ const Navbar = () => {
             className="md:hidden overflow-hidden bg-concrete border-t border-ink/10"
           >
             <div className="flex flex-col gap-1 px-5 py-4">
+              {user && (
+                <NavLink
+                  onClick={() => setOpen(false)}
+                  to="/profile"
+                  className="py-2.5 flex items-center gap-3 border-b border-ink/10 mb-1"
+                >
+                  {user.avatar ? (
+                    <img
+                      src={getAvatarUrl(user.avatar)}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full object-cover border border-ink/15"
+                    />
+                  ) : (
+                    <span className="w-8 h-8 rounded-full bg-dispatch text-concrete flex items-center justify-center font-bold text-xs">
+                      {getInitials(user.name, 1)}
+                    </span>
+                  )}
+                  <div>
+                    <p className="font-bold text-sm leading-tight text-ink">{user.name}</p>
+                    <p className="text-[11px] text-hazard font-mono uppercase">
+                      {user.role === 'worker' ? 'Worker Profile' : 'Customer Account'}
+                    </p>
+                  </div>
+                </NavLink>
+              )}
               <NavLink onClick={() => setOpen(false)} to="/" end className="py-2 font-medium">Home</NavLink>
               <NavLink onClick={() => setOpen(false)} to="/browse" className="py-2 font-medium">Find Workers</NavLink>
               {user && <NavLink onClick={() => setOpen(false)} to="/dashboard" className="py-2 font-medium">Dashboard</NavLink>}
               {user && <NavLink onClick={() => setOpen(false)} to="/bookings" className="py-2 font-medium">Bookings</NavLink>}
               {user && <NavLink onClick={() => setOpen(false)} to="/notifications" className="py-2 font-medium">Notifications</NavLink>}
+              {user && <NavLink onClick={() => setOpen(false)} to="/profile" className="py-2 font-medium">Settings & Photo</NavLink>}
               {user ? (
                 <button onClick={() => { setOpen(false); handleLogout(); }} className="mt-2 py-2 rounded-lg bg-ink text-concrete font-semibold">
                   Log out

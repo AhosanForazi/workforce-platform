@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { HiOutlineX, HiOutlineCalendar, HiOutlineLocationMarker } from 'react-icons/hi';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { getAvatarUrl, getInitials } from '../utils/imageUrl';
 
 const BookingModal = ({ worker, offer, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -12,7 +13,8 @@ const BookingModal = ({ worker, offer, onClose, onSuccess }) => {
   const [form, setForm] = useState({ date_time: '', address: user?.location || '', notes: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  const estimatedCost = offer?.hourly_rate || offer?.fixed_price || 0;
+  const estimatedCost = offer?.fixed_price || (offer?.hourly_rate ? offer.hourly_rate * 2 : 0);
+  const workerAvatarUrl = worker.avatar || worker.profileImage || worker.user_id?.avatar;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -64,9 +66,27 @@ const BookingModal = ({ worker, offer, onClose, onSuccess }) => {
           <button onClick={onClose} className="absolute top-4 right-4 text-ink/40 hover:text-ink">
             <HiOutlineX className="text-xl" />
           </button>
-          <span className="font-mono text-xs tracking-widest text-hazard">// NEW BOOKING TICKET</span>
-          <h2 className="font-display font-bold text-2xl mt-1 mb-1">Book {worker.user_id?.name}</h2>
-          <p className="text-sm text-ink/50 mb-5">{worker.service_type} · {estimatedCost ? `৳${estimatedCost}` : 'Rate on request'}</p>
+          
+          <div className="flex items-center gap-3.5 mb-5 pr-6">
+            {workerAvatarUrl ? (
+              <img
+                src={getAvatarUrl(workerAvatarUrl)}
+                alt={worker.user_id?.name || 'Worker'}
+                className="w-12 h-12 rounded-xl object-cover border border-ink/15 shrink-0 shadow-sm"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-dispatch text-concrete flex items-center justify-center font-bold font-display text-lg shrink-0">
+                {getInitials(worker.user_id?.name)}
+              </div>
+            )}
+            <div>
+              <span className="font-mono text-[10px] tracking-widest text-hazard block">// NEW BOOKING TICKET</span>
+              <h2 className="font-display font-bold text-xl leading-tight">Book {worker.user_id?.name}</h2>
+              <p className="text-xs text-ink/50 mt-0.5">
+                {worker.service_type} · {estimatedCost ? `৳${estimatedCost}` : 'Rate on request'}
+              </p>
+            </div>
+          </div>
 
           <form onSubmit={submit} className="space-y-4">
             <div>

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiOutlineLocationMarker, HiOutlineBadgeCheck, HiOutlineBriefcase } from 'react-icons/hi';
 import RatingStars from './RatingStars';
+import { getAvatarUrl, getInitials } from '../utils/imageUrl';
 
 const WorkerCard = ({ worker, index = 0 }) => {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = worker.avatar || worker.profileImage || worker.user_id?.avatar;
   const offer = worker.offers?.[0];
   const priceLabel = offer
     ? offer.hourly_rate
@@ -25,9 +28,21 @@ const WorkerCard = ({ worker, index = 0 }) => {
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-xl">
-              {worker.user_id?.name?.charAt(0) || 'W'}
-            </div>
+            {avatarUrl && !imgError ? (
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-dispatch shrink-0 border border-ink/10 shadow-sm relative group-hover:border-hazard transition-colors">
+                <img
+                  src={getAvatarUrl(avatarUrl)}
+                  alt={worker.user_id?.name || 'Worker'}
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div className="w-14 h-14 rounded-xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-xl shrink-0">
+                {getInitials(worker.user_id?.name)}
+              </div>
+            )}
             <div>
               <h3 className="font-display font-bold text-xl leading-tight flex items-center gap-1.5">
                 {worker.user_id?.name}

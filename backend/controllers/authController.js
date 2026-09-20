@@ -63,6 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email: user.email,
     role: user.role,
     location: user.location,
+    avatar: user.avatar || '',
     token: generateToken(user.id),
   });
 });
@@ -111,6 +112,7 @@ const getMe = asyncHandler(async (req, res) => {
     workerProfile = await prisma.workerProfile.findUnique({
       where: { userId: user.id },
       include: {
+        user: true,
         offers: { include: { service: true } },
         availabilities: true,
       },

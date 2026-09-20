@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineClipboardList, HiOutlineStar, HiOutlineBell, HiOutlineUserCircle, HiArrowRight } from 'react-icons/hi';
+import {
+  HiOutlineClipboardList,
+  HiOutlineStar,
+  HiOutlineBell,
+  HiOutlineUserCircle,
+  HiOutlineCamera,
+  HiArrowRight,
+} from 'react-icons/hi';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
+import { getAvatarUrl, getInitials } from '../utils/imageUrl';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -41,14 +49,39 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-5 md:px-8 py-14">
-      <div className="mb-10 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <span className="font-mono text-xs tracking-widest text-hazard">// {user?.role?.toUpperCase()} DASHBOARD</span>
-          <h1 className="font-display font-bold text-4xl mt-2">Welcome, {user?.name?.split(' ')[0]}.</h1>
+      <div className="mb-10 flex items-center justify-between flex-wrap gap-6 ticket p-6 shadow-card border border-ink/10">
+        <div className="flex items-center gap-4">
+          <Link to="/profile" className="relative group shrink-0" title="Change profile photo">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-dispatch border-2 border-ink/15 flex items-center justify-center shadow-card group-hover:border-hazard transition-colors">
+              {user?.avatar ? (
+                <img
+                  src={getAvatarUrl(user.avatar)}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="font-display font-bold text-2xl text-concrete">
+                  {getInitials(user?.name)}
+                </span>
+              )}
+            </div>
+            <span className="absolute -bottom-1 -right-1 p-1 rounded-full bg-hazard text-ink text-xs shadow group-hover:scale-110 transition-transform">
+              <HiOutlineCamera />
+            </span>
+          </Link>
+          <div>
+            <span className="font-mono text-xs tracking-widest text-hazard">// {user?.role?.toUpperCase()} DASHBOARD</span>
+            <h1 className="font-display font-bold text-3xl sm:text-4xl mt-1">Welcome back, {user?.name?.split(' ')[0]}.</h1>
+            <p className="text-xs text-ink/60 mt-0.5">
+              {user?.role === 'worker' ? 'Manage your jobs, schedule, and profile dispatch details.' : 'Track your bookings and service requests.'}
+            </p>
+          </div>
         </div>
-        <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-ink font-semibold hover:bg-ink hover:text-concrete transition-colors">
-          <HiOutlineUserCircle /> Edit profile
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-ink font-semibold hover:bg-ink hover:text-concrete transition-colors text-sm">
+            <HiOutlineUserCircle className="text-lg" /> Edit profile & photo
+          </Link>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-5 mb-10">

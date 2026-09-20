@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const prisma = require('../config/prisma');
-const { formatWorkerProfile, formatWorkerOffer } = require('../utils/formatters');
+const { formatWorkerProfile, formatWorkerOffer, formatUser } = require('../utils/formatters');
+const { deleteAvatarFile } = require('../middleware/uploadMiddleware');
 
 // @desc Search / browse workers with filters (location, service, rating, price, keyword)
 // @route GET /api/workers?service=&location=&minRating=&q=
@@ -114,6 +115,21 @@ const updateMyWorkerProfile = asyncHandler(async (req, res) => {
   if (req.body.bio !== undefined) data.bio = req.body.bio;
   if (req.body.skills !== undefined) data.skills = req.body.skills;
 
+  const avatarValue = req.body.profileImage !== undefined ? req.body.profileImage : req.body.avatar;
+  if (avatarValue !== undefined) {
+    const current = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatar: true },
+    });
+    if (current?.avatar && current.avatar !== avatarValue) {
+      deleteAvatarFile(current.avatar);
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: avatarValue },
+    });
+  }
+
   const updated = await prisma.workerProfile.update({
     where: { id: profile.id },
     data,
@@ -210,10 +226,100 @@ const addAvailability = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc Upload or update worker profile image (file upload or image URL)
+// @route POST /api/workers/me/avatar
+const uploadWorkerAvatar = asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user._id;
+
+  let newAvatarUrl = '';
+  if (req.file) {
+    newAvatarUrl = `/uploads/avatars/${req.file.filename}`;
+  } else if (req.body.avatar_url || req.body.avatar || req.body.profileImage || req.body.image) {
+    newAvatarUrl = (req.body.avatar_url || req.body.avatar || req.body.profileImage || req.body.image).trim();
+  }
+
+  if (!newAvatarUrl) {
+    res.status(400);
+    throw new Error('Please provide an image file or image URL');
+  }
+
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatar: true },
+  });
+
+  if (currentUser?.avatar && currentUser.avatar !== newAvatarUrl) {
+    deleteAvatarFile(currentUser.avatar);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: newAvatarUrl },
+  });
+
+  const workerProfile = await prisma.workerProfile.findUnique({
+    where: { userId },
+    include: {
+      user: true,
+      offers: { include: { service: true } },
+      availabilities: true,
+    },
+  });
+
+  res.json({
+    success: true,
+    message: 'Profile image updated successfully',
+    avatar: updatedUser.avatar,
+    profileImage: updatedUser.avatar,
+    user: formatUser(updatedUser),
+    workerProfile: formatWorkerProfile(workerProfile),
+  });
+});
+
+// @desc Delete / remove worker profile image
+// @route DELETE /api/workers/me/avatar
+const deleteWorkerAvatar = asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user._id;
+
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatar: true },
+  });
+
+  if (currentUser?.avatar) {
+    deleteAvatarFile(currentUser.avatar);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: '' },
+  });
+
+  const workerProfile = await prisma.workerProfile.findUnique({
+    where: { userId },
+    include: {
+      user: true,
+      offers: { include: { service: true } },
+      availabilities: true,
+    },
+  });
+
+  res.json({
+    success: true,
+    message: 'Profile image removed successfully',
+    avatar: '',
+    profileImage: '',
+    user: formatUser(updatedUser),
+    workerProfile: formatWorkerProfile(workerProfile),
+  });
+});
+
 module.exports = {
   getWorkers,
   getWorkerById,
   updateMyWorkerProfile,
   upsertServiceOffer,
   addAvailability,
+  uploadWorkerAvatar,
+  deleteWorkerAvatar,
 };

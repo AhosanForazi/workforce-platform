@@ -6,6 +6,7 @@ import api from '../api/axios';
 import RatingStars from '../components/RatingStars';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BookingModal from '../components/BookingModal';
+import { getAvatarUrl, getInitials } from '../utils/imageUrl';
 
 const WorkerProfilePage = () => {
   const { id } = useParams();
@@ -14,6 +15,7 @@ const WorkerProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -39,6 +41,7 @@ const WorkerProfilePage = () => {
   if (!data) return <div className="text-center py-24 text-ink/50">Worker not found.</div>;
 
   const { profile, offers, availability } = data;
+  const avatarUrl = profile.avatar || profile.profileImage || profile.user_id?.avatar;
 
   return (
     <div className="max-w-6xl mx-auto px-5 md:px-8 py-14">
@@ -46,9 +49,20 @@ const WorkerProfilePage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="md:col-span-2">
           <div className="ticket p-7 shadow-card">
             <div className="flex items-start gap-5">
-              <div className="w-20 h-20 rounded-2xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-3xl shrink-0">
-                {profile.user_id?.name?.charAt(0)}
-              </div>
+              {avatarUrl && !imgError ? (
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-dispatch shrink-0 border-2 border-ink/10 shadow-card">
+                  <img
+                    src={getAvatarUrl(avatarUrl)}
+                    alt={profile.user_id?.name || 'Worker avatar'}
+                    className="w-full h-full object-cover"
+                    onError={() => setImgError(true)}
+                  />
+                </div>
+              ) : (
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-dispatch text-concrete flex items-center justify-center font-display font-bold text-3xl shrink-0">
+                  {getInitials(profile.user_id?.name)}
+                </div>
+              )}
               <div className="flex-1">
                 <h1 className="font-display font-bold text-3xl flex items-center gap-2">
                   {profile.user_id?.name}

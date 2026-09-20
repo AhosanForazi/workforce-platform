@@ -29,6 +29,7 @@ const formatWorkerOffer = (offer) => {
 
 const formatWorkerProfile = (profile) => {
   if (!profile) return null;
+  const avatarUrl = profile.user?.avatar || profile.avatar || profile.profileImage || '';
   const formatted = {
     ...profile,
     _id: profile.id,
@@ -36,6 +37,8 @@ const formatWorkerProfile = (profile) => {
     ratingCount: profile.ratingCount,
     isVerified: profile.isVerified,
     completedJobs: profile.completedJobs,
+    avatar: avatarUrl,
+    profileImage: avatarUrl,
     user_id: profile.user ? formatUser(profile.user) : profile.userId,
   };
 
