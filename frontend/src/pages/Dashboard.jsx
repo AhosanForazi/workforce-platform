@@ -20,26 +20,68 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+
+  const load = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [b, n] = await Promise.all([
+        api.get('/bookings/my').catch((err) => {
+          console.warn('Could not fetch bookings:', err.message);
+          return { data: [] };
+        }),
+        api.get('/notifications').catch((err) => {
+          console.warn('Could not fetch notifications:', err.message);
+          return { data: [] };
+        }),
+      ]);
+      setBookings(Array.isArray(b.data) ? b.data : []);
+      setNotifications(Array.isArray(n.data) ? n.data : []);
+    } catch (e) {
+      console.error('Dashboard load error:', e);
+      setLoadError(e.message || 'Could not load dashboard data');
+      setBookings([]);
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [b, n] = await Promise.all([api.get('/bookings/my'), api.get('/notifications')]);
-        setBookings(b.data);
-        setNotifications(n.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  if (!user && !loading) {
+    return (
+      <div className="max-w-md mx-auto px-5 py-24 text-center">
+        <div className="ticket p-8 shadow-card space-y-4">
+          <HiOutlineUserCircle className="text-5xl text-hazard mx-auto" />
+          <h2 className="font-display font-bold text-2xl">Log In to View Dashboard</h2>
+          <p className="text-sm text-ink/60">Please sign in to access your jobs, bookings, and alerts.</p>
+          <Link
+            to="/login"
+            className="inline-block w-full py-3 rounded-lg bg-hazard text-ink font-bold hover:bg-ink hover:text-hazard transition-colors"
+          >
+            Log In Now
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <LoadingSpinner label="Loading your board…" />;
 
-  const active = bookings.filter((b) => ['pending', 'accepted', 'in_progress'].includes(b.status));
-  const completed = bookings.filter((b) => b.status === 'completed');
+  const safeBookings = Array.isArray(bookings) ? bookings : [];
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+
+  const active = safeBookings.filter((b) => ['pending', 'accepted', 'in_progress'].includes(b?.status));
+  const completed = safeBookings.filter((b) => b?.status === 'completed');
 
   const stats = [
     { label: 'Active jobs', value: active.length, icon: HiOutlineClipboardList, color: 'text-hazard' },
@@ -83,6 +125,20 @@ const Dashboard = () => {
           </Link>
         </div>
       </div>
+
+      {loadError && (
+        <div className="mb-8 p-4 rounded-xl bg-hazard/10 border border-hazard/30 flex items-center justify-between flex-wrap gap-3">
+          <p className="text-sm text-ink/80">
+            <strong>Connection Notice:</strong> {loadError}
+          </p>
+          <button
+            onClick={load}
+            className="px-3 py-1.5 rounded-lg bg-ink text-concrete text-xs font-bold hover:bg-hazard hover:text-ink transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-3 gap-5 mb-10">
         {stats.map((s, i) => (

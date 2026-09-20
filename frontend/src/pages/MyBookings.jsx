@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { HiOutlineCalendar, HiOutlineLocationMarker, HiOutlineStar } from 'react-icons/hi';
+import { HiOutlineCalendar, HiOutlineLocationMarker, HiOutlineStar, HiOutlineUserCircle, HiOutlineRefresh } from 'react-icons/hi';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -58,19 +59,32 @@ const MyBookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [reviewingId, setReviewingId] = useState(null);
 
   const load = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setLoadError(null);
     try {
       const { data } = await api.get('/bookings/my');
-      setBookings(data);
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load bookings:', err);
+      setLoadError(err.message || 'Could not load your bookings');
+      setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const advance = async (booking) => {
     try {
@@ -92,18 +106,52 @@ const MyBookings = () => {
     }
   };
 
+  if (!user && !loading) {
+    return (
+      <div className="max-w-md mx-auto px-5 py-24 text-center">
+        <div className="ticket p-8 shadow-card space-y-4">
+          <HiOutlineUserCircle className="text-5xl text-hazard mx-auto" />
+          <h2 className="font-display font-bold text-2xl">Log In to View Bookings</h2>
+          <p className="text-sm text-ink/60">Please sign in to track and manage your booked tickets.</p>
+          <Link
+            to="/login"
+            className="inline-block w-full py-3 rounded-lg bg-hazard text-ink font-bold hover:bg-ink hover:text-hazard transition-colors"
+          >
+            Log In Now
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) return <LoadingSpinner label="Pulling job tickets…" />;
+
+  const safeBookings = Array.isArray(bookings) ? bookings : [];
 
   return (
     <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
       <span className="font-mono text-xs tracking-widest text-hazard">// JOB TICKETS</span>
       <h1 className="font-display font-bold text-4xl mt-2 mb-8">My bookings</h1>
 
-      {bookings.length === 0 ? (
+      {loadError && (
+        <div className="mb-8 p-4 rounded-xl bg-hazard/10 border border-hazard/30 flex items-center justify-between flex-wrap gap-3">
+          <p className="text-sm text-ink/80">
+            <strong>Notice:</strong> {loadError}
+          </p>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink text-concrete text-xs font-bold hover:bg-hazard hover:text-ink transition-colors"
+          >
+            <HiOutlineRefresh /> Retry
+          </button>
+        </div>
+      )}
+
+      {safeBookings.length === 0 ? (
         <div className="ticket p-10 text-center text-ink/50">No bookings yet.</div>
       ) : (
         <div className="space-y-5">
-          {bookings.map((b, i) => (
+          {safeBookings.map((b, i) => (
             <motion.div
               key={b._id}
               initial={{ opacity: 0, y: 15 }}

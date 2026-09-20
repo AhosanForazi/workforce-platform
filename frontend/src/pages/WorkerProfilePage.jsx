@@ -7,6 +7,7 @@ import RatingStars from '../components/RatingStars';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BookingModal from '../components/BookingModal';
 import { getAvatarUrl, getInitials } from '../utils/imageUrl';
+import { DEMO_WORKERS } from '../utils/demoData';
 
 const WorkerProfilePage = () => {
   const { id } = useParams();
@@ -21,12 +22,33 @@ const WorkerProfilePage = () => {
     setLoading(true);
     try {
       const { data: res } = await api.get(`/workers/${id}`);
-      setData(res);
-      setSelectedOffer(res.offers?.[0] || null);
-      const { data: rev } = await api.get(`/reviews/worker/${id}`);
-      setReviews(rev);
+      if (res && (res.profile || res._id)) {
+        const profileObj = res.profile || res;
+        setData({
+          profile: profileObj,
+          offers: res.offers || profileObj.offers || [],
+          availability: res.availability || profileObj.availability || [],
+        });
+        setSelectedOffer(res.offers?.[0] || profileObj.offers?.[0] || null);
+        const { data: rev } = await api.get(`/reviews/worker/${id}`).catch(() => ({ data: [] }));
+        setReviews(Array.isArray(rev) ? rev : []);
+      } else {
+        throw new Error('Worker not found');
+      }
     } catch (e) {
-      console.error(e);
+      console.warn('Could not load worker from API, checking demo workers:', e.message);
+      const demoMatch = DEMO_WORKERS.find((w) => w._id === id);
+      if (demoMatch) {
+        setData({
+          profile: demoMatch,
+          offers: demoMatch.offers || [],
+          availability: demoMatch.availability || [],
+        });
+        setSelectedOffer(demoMatch.offers?.[0] || null);
+        setReviews([]);
+      } else {
+        setData(null);
+      }
     } finally {
       setLoading(false);
     }
