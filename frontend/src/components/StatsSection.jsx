@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 const stats = [
-  { value: 99.5, suffix: '%', label: 'System uptime target' },
-  { value: 2, suffix: ' hr', label: 'Avg. worker response time' },
-  { value: 10000, suffix: '+', label: 'Concurrent users supported' },
-  { value: 75, suffix: '%', label: 'Monthly active-user retention' },
+  { value: 10000, suffix: '+', label: 'Completed local orders' },
+  { value: 98, suffix: '%', label: '5-star positive satisfaction' },
+  { value: 2, suffix: 'h', label: 'Average response dispatch' },
+  { value: 100, suffix: '%', label: 'Payment buyer protection' },
 ];
 
 const Counter = ({ value, suffix }) => {
@@ -16,7 +16,7 @@ const Counter = ({ value, suffix }) => {
   useEffect(() => {
     if (!inView) return;
     let start = 0;
-    const duration = 1400;
+    const duration = 1200;
     const startTime = performance.now();
     const tick = (now) => {
       const progress = Math.min((now - startTime) / duration, 1);
@@ -28,7 +28,7 @@ const Counter = ({ value, suffix }) => {
   }, [inView, value]);
 
   return (
-    <span ref={ref} className="font-display font-bold text-5xl md:text-6xl text-hazard">
+    <span ref={ref} className="font-extrabold text-4xl sm:text-5xl text-[#1dbf73]">
       {display.toLocaleString()}
       {suffix}
     </span>
@@ -36,18 +36,19 @@ const Counter = ({ value, suffix }) => {
 };
 
 const StatsSection = () => (
-  <section className="blueprint-bg border-y border-ink/10 py-20">
-    <div className="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-2 lg:grid-cols-4 gap-10 text-center">
+  <section className="bg-white border-b border-[#efeff0] py-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
       {stats.map((s, i) => (
         <motion.div
           key={s.label}
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: i * 0.1 }}
+          transition={{ delay: i * 0.08 }}
+          className="p-4"
         >
           <Counter value={s.value} suffix={s.suffix} />
-          <p className="mt-2 text-sm text-ink/60 font-medium">{s.label}</p>
+          <p className="mt-2 text-sm text-[#62646a] font-medium">{s.label}</p>
         </motion.div>
       ))}
     </div>

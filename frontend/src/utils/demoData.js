@@ -1,16 +1,35 @@
+export const GIG_CATEGORIES = [
+  { id: 'all', name: 'All Services', icon: '⚡' },
+  { id: 'electrician', name: 'Electrical & Wiring', icon: '⚡', slug: 'Electrician', img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80' },
+  { id: 'plumber', name: 'Plumbing & Water', icon: '🔧', slug: 'Plumber', img: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80' },
+  { id: 'painter', name: 'Painting & Walls', icon: '🎨', slug: 'Painter', img: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=600&q=80' },
+  { id: 'carpenter', name: 'Carpentry & Woodwork', icon: '🔨', slug: 'Carpenter', img: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80' },
+  { id: 'cleaner', name: 'Home Deep Cleaning', icon: '🧹', slug: 'Cleaner', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80' },
+  { id: 'gardener', name: 'Gardening & Landscaping', icon: '🌱', slug: 'Gardener', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80' },
+  { id: 'technician', name: 'AC & Appliance Repair', icon: '❄️', slug: 'Technician', img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80' },
+];
+
 export const DEMO_WORKERS = [
   {
     _id: 'demo-worker-1',
     service_type: 'Electrician',
     experience: '5-8 years',
-    rating: 4.8,
-    ratingCount: 34,
-    bio: 'Licensed electrician specializing in residential wiring & emergency repairs.',
+    rating: 4.9,
+    ratingCount: 84,
+    bio: 'Certified Master Electrician with 7+ years of field experience. Specializing in home wiring, short-circuit diagnostics, fuse board upgrades, and emergency electrical troubleshooting.',
     isVerified: true,
-    skills: ['Wiring', 'Fan Installation', 'Panel Repair'],
-    completedJobs: 128,
+    sellerLevel: 'Top Rated Seller',
+    ordersInQueue: 3,
+    skills: ['Wiring', 'Switchboard Repair', 'Circuit Breakers', 'Safety Inspection', 'Ceiling Fan'],
+    completedJobs: 142,
     avatar: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80',
     profileImage: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will inspect, repair and install electrical wiring, switchboards and circuit fixtures',
+    gigImages: [
+      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+    ],
     user_id: {
       _id: 'demo-user-1',
       name: 'Karim Sheikh',
@@ -26,6 +45,54 @@ export const DEMO_WORKERS = [
         service_id: { _id: 'srv-1', service_name: 'Electrician' },
       },
     ],
+    packages: {
+      basic: {
+        name: 'Basic Diagnostic & Quick Fix',
+        price: 350,
+        turnaround: '2 Hours Delivery',
+        revisions: '1 Follow-up Visit',
+        description: 'Complete fault diagnostic, voltage check, and fix for 1 single switch or ceiling fixture.',
+        features: [
+          'Full electrical safety check',
+          'Single socket/switch repair',
+          'Up to 1 hour on-site labor',
+          'Basic circuit load testing',
+        ],
+      },
+      standard: {
+        name: 'Standard Repair & Part Replace',
+        price: 950,
+        turnaround: '1 Day Delivery',
+        revisions: '2 Follow-up Visits',
+        description: 'Troubleshoot complex short circuits, replace main breakers, and 15-day service guarantee.',
+        features: [
+          'Everything in Basic Package',
+          'Up to 3 hours on-site labor',
+          'Circuit breaker & wiring overhaul',
+          '15-day service guarantee',
+          'Post-repair safety certification',
+        ],
+      },
+      premium: {
+        name: 'Master Overhaul & Priority Safety',
+        price: 2200,
+        turnaround: 'Priority Same-Day',
+        revisions: '30-Day Support',
+        description: 'Whole-house electrical load balancing, complete distribution box rewiring, and priority 24/7 hotline.',
+        features: [
+          'Everything in Standard Package',
+          'Full day dedicated master technician',
+          'Whole-house load balancing',
+          '30-day comprehensive guarantee',
+          'Priority 1-hour emergency recall',
+        ],
+      },
+    },
+    faq: [
+      { q: 'Do you bring your own diagnostic equipment and tools?', a: 'Yes! I arrive fully equipped with professional digital multimeters, insulation testers, wire pullers, and standard replacement safety breakers.' },
+      { q: 'What happens if replacement parts or extra wires are required?', a: 'I can either source genuine, certified copper cables and breakers for you at market cost with receipts, or install parts you supply.' },
+      { q: 'Do you provide a warranty on electrical repairs?', a: 'Standard and Premium packages come with 15-day and 30-day written service warranties with free re-inspections.' },
+    ],
     availability: [
       { _id: 'av-1', day_of_week: 'Mon–Fri', start_time: '09:00', end_time: '18:00' },
       { _id: 'av-2', day_of_week: 'Saturday', start_time: '10:00', end_time: '15:00' },
@@ -34,15 +101,22 @@ export const DEMO_WORKERS = [
   {
     _id: 'demo-worker-2',
     service_type: 'Painter',
-    experience: '3-5 years',
-    rating: 4.6,
-    ratingCount: 21,
-    bio: 'Detail-oriented painter for interior and exterior projects.',
+    experience: '4-6 years',
+    rating: 4.8,
+    ratingCount: 52,
+    bio: 'Professional decorative and protective painter. Expert in clean wall preparation, smooth roller coats, exterior weatherproofing, and modern texture finishes.',
     isVerified: true,
-    skills: ['Interior Paint', 'Texture Wall', 'Waterproofing'],
-    completedJobs: 76,
+    sellerLevel: 'Level 2 Seller',
+    ordersInQueue: 2,
+    skills: ['Interior Paint', 'Texture Wall', 'Waterproofing', 'Primer Coat', 'Wood Polish'],
+    completedJobs: 98,
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
     profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will paint your interior walls, apply waterproof coating and clean room finish',
+    gigImages: [
+      'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1000&q=80',
+    ],
     user_id: {
       _id: 'demo-user-2',
       name: 'Nasrin Akter',
@@ -54,10 +128,54 @@ export const DEMO_WORKERS = [
     offers: [
       {
         _id: 'offer-2',
-        fixed_price: 4500,
+        hourly_rate: 300,
+        fixed_price: 1500,
         service_id: { _id: 'srv-2', service_name: 'Painter' },
       },
     ],
+    packages: {
+      basic: {
+        name: 'Single Accent Wall or Touch-Up',
+        price: 800,
+        turnaround: '1 Day Delivery',
+        revisions: '1 Touch-up Visit',
+        description: 'Single room accent wall or patch sanding, crack filling, and 2 premium coats.',
+        features: [
+          'Wall sanding & crack filling',
+          'Up to 150 sq. ft coverage',
+          'Two uniform finish coats',
+          'Floor masking & furniture draping',
+        ],
+      },
+      standard: {
+        name: 'Full Room Complete Painting',
+        price: 2400,
+        turnaround: '2 Days Delivery',
+        revisions: '2 Touch-up Visits',
+        description: 'Full bedroom or living room wall preparation, primer undercoat, two coats of wash paint.',
+        features: [
+          'Complete wall scraping & putty',
+          'Up to 450 sq. ft coverage',
+          'High-durability washable paint',
+          'Baseboard & trim detailing',
+          'Post-paint floor cleaning',
+        ],
+      },
+      premium: {
+        name: 'Whole Apartment Master Finish',
+        price: 6500,
+        turnaround: '4 Days Delivery',
+        revisions: 'Unlimited Touch-ups',
+        description: 'Complete 2-3 BHK interior transformation with moisture-proofing and luxury textured walls.',
+        features: [
+          'Whole house moisture assessment',
+          'Full primer + 3 luxury finish coats',
+          '1 feature texture wall included',
+          'Deep room clean & furniture reset',
+          '1-year peel-free guarantee',
+        ],
+      },
+    },
     availability: [
       { _id: 'av-3', day_of_week: 'Mon–Sat', start_time: '08:30', end_time: '17:30' },
     ],
@@ -66,14 +184,21 @@ export const DEMO_WORKERS = [
     _id: 'demo-worker-3',
     service_type: 'Plumber',
     experience: '8+ years',
-    rating: 4.9,
-    ratingCount: 58,
-    bio: 'Master plumber, 8+ years fixing leaks and installing fixtures fast.',
+    rating: 5.0,
+    ratingCount: 110,
+    bio: 'Master Plumber with over 8 years of emergency pipe repairs, bathroom faucet installations, drain declogging, and water heater setup.',
     isVerified: true,
-    skills: ['Leak Repair', 'Pipe Fitting'],
-    completedJobs: 210,
+    sellerLevel: 'Top Rated Seller',
+    ordersInQueue: 4,
+    skills: ['Leak Repair', 'Pipe Fitting', 'Drain Unclogging', 'Water Pump', 'Faucet Install'],
+    completedJobs: 240,
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will fix water leaks, unclog drains and install bathroom or kitchen plumbing fixtures',
+    gigImages: [
+      'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1000&q=80',
+    ],
     user_id: {
       _id: 'demo-user-3',
       name: 'Jahangir Alam',
@@ -85,57 +210,76 @@ export const DEMO_WORKERS = [
     offers: [
       {
         _id: 'offer-3',
-        hourly_rate: 300,
+        hourly_rate: 350,
         service_id: { _id: 'srv-3', service_name: 'Plumber' },
       },
     ],
+    packages: {
+      basic: {
+        name: 'Faucet / Leak Diagnostic & Fix',
+        price: 350,
+        turnaround: '2 Hours Delivery',
+        revisions: '1 Follow-up Visit',
+        description: 'Fix 1 leaking faucet, loose pipe connection, or toilet flush valve inspection.',
+        features: [
+          'Rapid pressure leak detection',
+          'Single faucet or valve repair',
+          'Up to 1 hour on-site labor',
+          'Sealing washer replacements',
+        ],
+      },
+      standard: {
+        name: 'Drain Declog & Pipe Replacement',
+        price: 900,
+        turnaround: '1 Day Delivery',
+        revisions: '2 Follow-up Visits',
+        description: 'Complete drain snake declogging, kitchen sink or bathroom trap replacement, 20-day warranty.',
+        features: [
+          'Motorized drain snake clearing',
+          'PVC/PPR pipe section replacement',
+          'Up to 3 hours on-site labor',
+          '20-day no-clog guarantee',
+          'Sanitary area sterilization',
+        ],
+      },
+      premium: {
+        name: 'Complete Bathroom Overhaul & Pump Fix',
+        price: 2500,
+        turnaround: 'Priority Same-Day',
+        revisions: '30-Day Guarantee',
+        description: 'Concealed line troubleshooting, water motor pump calibration, and whole sanitary overhaul.',
+        features: [
+          'Full bathroom pressure test',
+          'Water pump & overhead tank check',
+          'Concealed pipe leak localization',
+          '30-day leak-free guarantee',
+          'Priority 45-min arrival time',
+        ],
+      },
+    },
     availability: [
       { _id: 'av-4', day_of_week: 'Everyday', start_time: '07:00', end_time: '21:00' },
     ],
   },
   {
     _id: 'demo-worker-4',
-    service_type: 'Gardener',
-    experience: '2-4 years',
-    rating: 4.5,
-    ratingCount: 15,
-    bio: 'Passionate gardener helping homes bloom, big or small.',
-    isVerified: false,
-    skills: ['Lawn Care', 'Planting'],
-    completedJobs: 42,
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
-    profileImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
-    user_id: {
-      _id: 'demo-user-4',
-      name: 'Salma Begum',
-      email: 'salma.gardener@workforce.app',
-      phone: '+8801555555555',
-      location: 'Gazipur',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
-    },
-    offers: [
-      {
-        _id: 'offer-4',
-        hourly_rate: 200,
-        service_id: { _id: 'srv-4', service_name: 'Gardener' },
-      },
-    ],
-    availability: [
-      { _id: 'av-5', day_of_week: 'Mon–Fri', start_time: '08:00', end_time: '16:00' },
-    ],
-  },
-  {
-    _id: 'demo-worker-5',
     service_type: 'Carpenter',
-    experience: '5-8 years',
-    rating: 4.7,
-    ratingCount: 29,
-    bio: 'Custom furniture and quick fix-it carpentry services.',
+    experience: '6-9 years',
+    rating: 4.8,
+    ratingCount: 46,
+    bio: 'Master Craftsman specializing in wooden door alignment, lock installs, modular kitchen assembly, and custom cabinet repair.',
     isVerified: true,
-    skills: ['Furniture', 'Door Repair'],
-    completedJobs: 95,
+    sellerLevel: 'Level 2 Seller',
+    ordersInQueue: 1,
+    skills: ['Furniture Assembly', 'Door Repair', 'Lock Installation', 'Cabinet Polish', 'Hinges'],
+    completedJobs: 115,
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
     profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will assemble, repair, and install wooden furniture, doors and lock systems',
+    gigImages: [
+      'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1000&q=80',
+    ],
     user_id: {
       _id: 'demo-user-5',
       name: 'Rafiq Islam',
@@ -147,26 +291,77 @@ export const DEMO_WORKERS = [
     offers: [
       {
         _id: 'offer-5',
-        fixed_price: 2500,
+        hourly_rate: 350,
+        fixed_price: 1200,
         service_id: { _id: 'srv-5', service_name: 'Carpenter' },
       },
     ],
+    packages: {
+      basic: {
+        name: 'Door Alignment & Lock Repair',
+        price: 400,
+        turnaround: '2 Hours Delivery',
+        revisions: '1 Follow-up Visit',
+        description: 'Realign sticking doors, lubricate or replace handles and mortise locks.',
+        features: [
+          'Door shaving & hinge adjustment',
+          'Single lock or handle fitting',
+          'Up to 1 hour on-site labor',
+          'Smooth latch testing',
+        ],
+      },
+      standard: {
+        name: 'Modular Furniture & Bed Assembly',
+        price: 1100,
+        turnaround: '1 Day Delivery',
+        revisions: '2 Follow-up Visits',
+        description: 'Assemble flat-pack wardrobes, bed frames, dining sets, and structural reinforcement.',
+        features: [
+          'Full assembly of 1 major item',
+          'Heavy-duty anchor bracket install',
+          'Up to 3 hours precision work',
+          '15-day wobble-free guarantee',
+          'Wood polish buffing included',
+        ],
+      },
+      premium: {
+        name: 'Custom Cabinet & Kitchen Overhaul',
+        price: 2800,
+        turnaround: '2 Days Delivery',
+        revisions: '30-Day Guarantee',
+        description: 'Kitchen drawer channel overhaul, hydraulic hinges setup, and structural wood repairs.',
+        features: [
+          'Up to 6 soft-close drawer tracks',
+          'Cabinet realignment & reinforcement',
+          'Whole-day master carpenter labor',
+          '30-day service warranty',
+          'Debris clean-up and dust vacuuming',
+        ],
+      },
+    },
     availability: [
       { _id: 'av-6', day_of_week: 'Mon–Sat', start_time: '09:00', end_time: '18:00' },
     ],
   },
   {
-    _id: 'demo-worker-6',
+    _id: 'demo-worker-5',
     service_type: 'Cleaner',
-    experience: '1-3 years',
-    rating: 4.4,
-    ratingCount: 12,
-    bio: 'Reliable and thorough home cleaning, on your schedule.',
-    isVerified: false,
-    skills: ['Deep Clean', 'Move-out Clean'],
-    completedJobs: 33,
+    experience: '3-5 years',
+    rating: 4.9,
+    ratingCount: 38,
+    bio: 'Professional deep cleaning specialist. Equipped with industrial steam vacuums and hospital-grade sanitizers to leave your home sparkling clean.',
+    isVerified: true,
+    sellerLevel: 'Top Rated Seller',
+    ordersInQueue: 2,
+    skills: ['Deep Clean', 'Move-out Clean', 'Kitchen Degrease', 'Bathroom Scrub', 'Sanitization'],
+    completedJobs: 89,
     avatar: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80',
     profileImage: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will deep clean and sanitize your apartment, kitchen or bathroom to perfection',
+    gigImages: [
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=1000&q=80',
+    ],
     user_id: {
       _id: 'demo-user-6',
       name: 'Moushumi Rani',
@@ -179,11 +374,220 @@ export const DEMO_WORKERS = [
       {
         _id: 'offer-6',
         hourly_rate: 250,
+        fixed_price: 1000,
         service_id: { _id: 'srv-6', service_name: 'Cleaner' },
       },
     ],
+    packages: {
+      basic: {
+        name: '1 Bathroom or Kitchen Deep Scrub',
+        price: 500,
+        turnaround: '2 Hours Delivery',
+        revisions: 'Same-day Inspection',
+        description: 'Complete tile scrubbing, limescale removal, disinfectant treatment, and fixtures shine.',
+        features: [
+          'Eco-friendly descaling agent',
+          'Tile grout scrubbing & polishing',
+          'Mirror & chrome fixture buffing',
+          'Trash bag removal included',
+        ],
+      },
+      standard: {
+        name: 'Standard Home Deep Clean (2-Bed)',
+        price: 1500,
+        turnaround: '1 Day Delivery',
+        revisions: '24h Re-clean Guarantee',
+        description: 'Thorough dusting, floor vacuuming, mopping, kitchen degreasing, and 2 bathrooms scrubbed.',
+        features: [
+          'All living rooms + bedrooms',
+          'Heavy kitchen grease breakdown',
+          '2 full bathroom sanitizations',
+          'Window panes & balcony sweep',
+          'Fresh aroma mist finish',
+        ],
+      },
+      premium: {
+        name: 'Full Move-in / Move-out Master Clean',
+        price: 3200,
+        turnaround: '1 Day Delivery',
+        revisions: '100% Inspection Passed',
+        description: 'End-of-lease or pre-move sparkling turnaround with inside cabinets, fridge, and oven scrub.',
+        features: [
+          'Entire property deep scrub',
+          'Inside all cupboards & shelves',
+          'Oven & chimney degreasing',
+          'Floor polishing & grout whitening',
+          'Full satisfaction walk-through',
+        ],
+      },
+    },
     availability: [
       { _id: 'av-7', day_of_week: 'Mon–Sun', start_time: '08:00', end_time: '20:00' },
     ],
+  },
+  {
+    _id: 'demo-worker-6',
+    service_type: 'Gardener',
+    experience: '4-7 years',
+    rating: 4.7,
+    ratingCount: 31,
+    bio: 'Horticulturist and urban gardener. Passionate about rooftop green gardens, lawn mowing, organic soil conditioning, and pest control.',
+    isVerified: true,
+    sellerLevel: 'Level 2 Seller',
+    ordersInQueue: 1,
+    skills: ['Lawn Mowing', 'Planting', 'Pruning', 'Fertilizer', 'Roof Gardening'],
+    completedJobs: 64,
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+    profileImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+    gigTitle: 'I will trim hedges, treat soil, mow lawns and maintain your home or rooftop garden',
+    gigImages: [
+      'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1592417817098-8f3d69104a49?auto=format&fit=crop&w=1000&q=80',
+    ],
+    user_id: {
+      _id: 'demo-user-4',
+      name: 'Salma Begum',
+      email: 'salma.gardener@workforce.app',
+      phone: '+8801555555555',
+      location: 'Gazipur',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+    },
+    offers: [
+      {
+        _id: 'offer-4',
+        hourly_rate: 250,
+        fixed_price: 800,
+        service_id: { _id: 'srv-4', service_name: 'Gardener' },
+      },
+    ],
+    packages: {
+      basic: {
+        name: 'Hedge Trimming & Lawn Cut',
+        price: 450,
+        turnaround: '2 Hours Delivery',
+        revisions: '1 Follow-up Visit',
+        description: 'Lawn mower trim, decorative hedge shaping, and green leaf bag clearing.',
+        features: [
+          'Up to 500 sq. ft lawn trim',
+          'Hedge & border shaping',
+          'Debris raking & bagging',
+          'Tools & fuel provided',
+        ],
+      },
+      standard: {
+        name: 'Seasonal Pruning & Soil Nourish',
+        price: 1200,
+        turnaround: '1 Day Delivery',
+        revisions: '2 Follow-up Visits',
+        description: 'Fertilizer aeration, tree branch pruning, organic neem pest spray, and potted repotting.',
+        features: [
+          'Full weed removal & soil tilling',
+          'Organic compost nourishment',
+          'Anti-fungal & pest spray treatment',
+          'Up to 15 potted plants repotted',
+          '15-day plant health check',
+        ],
+      },
+      premium: {
+        name: 'Rooftop or Backyard Garden Revamp',
+        price: 2800,
+        turnaround: '2 Days Delivery',
+        revisions: '30-Day Plant Care',
+        description: 'Complete landscape design, drip irrigation check, 10 seasonal flower plants planted with rich soil mix.',
+        features: [
+          'Complete garden makeover',
+          'Drip pipe & drainage optimization',
+          '10 new flowering saplings included',
+          'Rich vermicompost soil mix',
+          '30-day plant warranty',
+        ],
+      },
+    },
+    availability: [
+      { _id: 'av-5', day_of_week: 'Mon–Fri', start_time: '08:00', end_time: '16:00' },
+    ],
+  },
+];
+
+/**
+ * Universal helper that returns 3 Fiverr packages (Basic, Standard, Premium)
+ * for ANY worker object (whether from live backend API or local demo data).
+ */
+export const getWorkerPackages = (worker) => {
+  if (worker?.packages?.basic && worker?.packages?.standard && worker?.packages?.premium) {
+    return worker.packages;
+  }
+
+  // Derive dynamic pricing from offers or fallback
+  const firstOffer = worker?.offers?.[0];
+  const baseRate = Number(firstOffer?.hourly_rate || firstOffer?.fixed_price || 350);
+  const trade = worker?.service_type || 'General Service';
+
+  return {
+    basic: {
+      name: `Basic ${trade} Diagnostic & Fix`,
+      price: Math.max(250, baseRate),
+      turnaround: '2 Hours Delivery',
+      revisions: '1 Follow-up Visit',
+      description: `Rapid diagnostics, testing, and essential fix for 1 single ${trade.toLowerCase()} issue.`,
+      features: [
+        `Initial ${trade.toLowerCase()} safety inspection`,
+        'Up to 1 hour on-site labor',
+        'Standard tools & equipment provided',
+        'Transparent fault diagnostic report',
+      ],
+    },
+    standard: {
+      name: `Standard ${trade} Repair & Guarantee`,
+      price: Math.max(650, Math.round((baseRate * 2.6) / 10) * 10),
+      turnaround: '1 Day Delivery',
+      revisions: '2 Follow-up Visits',
+      description: `Comprehensive troubleshoot, component replacement, and 15-day service warranty.`,
+      features: [
+        'Everything in Basic Package',
+        'Up to 3 hours on-site labor',
+        'Parts installation & tuning',
+        '15-day workmanship guarantee',
+        'Workspace cleanup after completion',
+      ],
+    },
+    premium: {
+      name: `Master ${trade} Overhaul & Priority`,
+      price: Math.max(1400, Math.round((baseRate * 5.8) / 10) * 10),
+      turnaround: 'Priority Same-Day',
+      revisions: '30-Day Support',
+      description: `Complete whole-system overhaul, priority dispatch, and comprehensive 30-day warranty.`,
+      features: [
+        'Everything in Standard Package',
+        'Full-day dedicated technician service',
+        'Heavy-duty components and load testing',
+        '30-day comprehensive guarantee',
+        'Priority emergency recall hotline',
+      ],
+    },
+  };
+};
+
+/**
+ * Common Fiverr Gig Add-ons / Extras for checkout
+ */
+export const GIG_EXTRAS = [
+  {
+    id: 'extra_rush',
+    title: '⚡ 2-Hour Emergency Dispatch',
+    desc: 'Guaranteed technician arrival at your address within 120 minutes.',
+    price: 250,
+  },
+  {
+    id: 'extra_parts',
+    title: '🛠️ Premium Materials & Sourcing',
+    desc: 'Worker brings certified, heavy-duty parts with manufacturer warranty.',
+    price: 450,
+  },
+  {
+    id: 'extra_clean',
+    title: '🧹 Post-Job Deep Dust & Debris Removal',
+    desc: 'Full area vacuuming, surface wipe-down and waste disposal.',
+    price: 150,
   },
 ];

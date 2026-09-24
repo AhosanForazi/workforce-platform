@@ -15,13 +15,31 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const normalizedEmail = email.toLowerCase().trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(normalizedEmail)) {
+    res.status(400);
+    throw new Error('Please enter a valid email address (e.g. name@example.com)');
+  }
+
   const userExists = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   });
 
   if (userExists) {
     res.status(400);
-    throw new Error('An account with this email already exists');
+    throw new Error('An account with this email address already exists. Please sign in instead.');
+  }
+
+  const cleanPhone = phone && typeof phone === 'string' && phone.trim().length > 0 ? phone.trim() : null;
+
+  if (cleanPhone) {
+    const phoneExists = await prisma.user.findFirst({
+      where: { phone: cleanPhone },
+    });
+    if (phoneExists) {
+      res.status(400);
+      throw new Error(`The phone number "${cleanPhone}" is already registered. Please use a different phone number or sign in.`);
+    }
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -31,7 +49,7 @@ const registerUser = asyncHandler(async (req, res) => {
     data: {
       name: name.trim(),
       email: normalizedEmail,
-      phone: phone ? phone.trim() : null,
+      phone: cleanPhone,
       password: hashedPassword,
       role: role === 'worker' ? 'worker' : 'customer',
       location: location ? location.trim() : '',

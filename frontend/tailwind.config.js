@@ -4,33 +4,40 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#181611',
-        concrete: '#F6F3EC',
+        fiverr: '#1dbf73',
+        fiverrDark: '#19a463',
+        fiverrHover: '#10a360',
+        fiverrLight: '#eefaf4',
+        fiverrBg: '#f7f7f7',
+        fiverrDarkBg: '#013914',
+        fiverrText: '#222325',
+        fiverrMuted: '#62646a',
+        fiverrLightText: '#74767e',
+        fiverrBorder: '#e4e5e7',
+        fiverrBorderLight: '#efeff0',
+        fiverrStar: '#ffb33e',
+        // Backward-compatible color aliases so old components map cleanly to Fiverr palette
+        hazard: '#1dbf73',
+        hazardDark: '#19a463',
+        ink: '#222325',
+        concrete: '#f7f7f7',
         panel: '#FFFFFF',
-        hazard: '#FF6A2B',
-        hazardDark: '#E0501A',
         dispatch: '#1F3A5F',
-        signal: '#2E8B57',
-        alert: '#D6455A',
-        steel: '#8B8478',
+        signal: '#1dbf73',
+        alert: '#F74040',
+        steel: '#74767e',
       },
       fontFamily: {
-        display: ['"Barlow Condensed"', 'sans-serif'],
-        body: ['"Work Sans"', 'sans-serif'],
+        sans: ['"Inter"', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Inter"', 'sans-serif'],
+        body: ['"Inter"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'monospace'],
       },
-      backgroundImage: {
-        blueprint:
-          'linear-gradient(rgba(31,58,95,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(31,58,95,0.06) 1px, transparent 1px)',
-        'hazard-stripe':
-          'repeating-linear-gradient(45deg, #FF6A2B, #FF6A2B 12px, #181611 12px, #181611 24px)',
-      },
-      backgroundSize: {
-        blueprint: '32px 32px',
-      },
       boxShadow: {
-        ticket: '0 20px 60px -20px rgba(24,22,17,0.35)',
-        card: '0 10px 30px -12px rgba(24,22,17,0.18)',
+        fiverr: '0 0.14px 2.29px rgba(0,0,0,0.032), 0 0.37px 4.43px rgba(0,0,0,0.048), 0 3px 14px rgba(0,0,0,0.08)',
+        fiverrHover: '0 8px 24px rgba(0,0,0,0.12)',
+        ticket: '0 8px 30px rgba(0,0,0,0.08)',
+        card: '0 2px 12px rgba(0,0,0,0.06)',
       },
       keyframes: {
         pulseDot: {

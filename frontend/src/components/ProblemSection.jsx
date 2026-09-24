@@ -1,61 +1,101 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HiOutlineSearch, HiOutlineShieldExclamation, HiOutlineUserGroup, HiOutlineClock } from 'react-icons/hi';
+import {
+  HiOutlineCheckCircle,
+  HiOutlineCurrencyDollar,
+  HiOutlineLightningBolt,
+  HiOutlineShieldCheck,
+  HiOutlineSupport,
+} from 'react-icons/hi';
 
-const problems = [
+const valueProps = [
   {
-    icon: HiOutlineSearch,
-    title: 'Customer Challenge',
-    text: 'Customers struggle finding reliable local workers for various services without verified information and standardized platform solutions.',
+    icon: HiOutlineCurrencyDollar,
+    title: 'Upfront, transparent pricing',
+    text: 'No unexpected hourly charges or bargaining. Clear 3-tier Gig packages (Basic, Standard, Premium) with explicit scope and deliverables.',
   },
   {
-    icon: HiOutlineShieldExclamation,
-    title: 'Trust & Verification Gap',
-    text: 'Lack of verified credentials and trust creates uncertainty in hiring decisions, leading to inefficient processes and poor outcomes.',
+    icon: HiOutlineLightningBolt,
+    title: 'Quality work done quickly',
+    text: 'Filter by turnaround time, customer reviews, or express emergency dispatch to have a vetted technician arrive at your doorstep in hours.',
   },
   {
-    icon: HiOutlineUserGroup,
-    title: 'Worker Access Problem',
-    text: 'Workers face challenges reaching potential customers, while information asymmetry between service providers and seekers persists widely.',
+    icon: HiOutlineShieldCheck,
+    title: 'Protected payments, every time',
+    text: 'Your funds remain securely held in escrow until the job is inspected and you approve the delivery with 100% satisfaction.',
   },
   {
-    icon: HiOutlineClock,
-    title: 'Market Inefficiency',
-    text: 'Time-consuming hiring processes lack standardization, creating friction and preventing efficient connections between supply and demand.',
+    icon: HiOutlineSupport,
+    title: '24/7 dedicated support',
+    text: 'Round-the-clock dispute resolution, customer assistance, and warranty coverage so you never have to worry about unfinished work.',
   },
 ];
 
 const ProblemSection = () => {
   return (
-    <section className="max-w-7xl mx-auto px-5 md:px-8 py-24">
-      <div className="flex items-end justify-between flex-wrap gap-4 mb-14">
-        <div>
-          <span className="font-mono text-xs tracking-widest text-hazard">// THE PROBLEM WE SOLVE</span>
-          <h2 className="font-display font-bold text-4xl md:text-5xl mt-2">Hiring local help is broken.</h2>
-        </div>
-        <p className="max-w-sm text-ink/60 text-sm leading-relaxed">
-          Four cracks in the local labor market — the same four things WorkForce was engineered to patch.
-        </p>
-      </div>
+    <section className="py-20 bg-[#f7f7f7] border-b border-[#efeff0]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          {/* Left Text & Features */}
+          <div className="lg:col-span-7">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#222325] leading-tight">
+              A whole world of skilled talent at your fingertips
+            </h2>
+            <p className="mt-4 text-base text-[#62646a] max-w-xl">
+              From quick socket fixes to full home renovation and deep sanitation, Workforce connects you with verified tradespeople ready to work.
+            </p>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {problems.map((p, i) => (
-          <motion.div
-            key={p.title}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ delay: i * 0.1, duration: 0.5 }}
-            className="group relative bg-panel rounded-2xl p-6 shadow-card border border-ink/5 hover:-translate-y-1.5 hover:shadow-ticket transition-all duration-300"
-          >
-            <div className="absolute top-5 right-5 font-mono text-xs text-ink/20">0{i + 1}</div>
-            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center mb-5 group-hover:bg-hazard transition-colors">
-              <p.icon className="text-2xl text-concrete group-hover:text-ink transition-colors" />
+            <div className="mt-10 grid sm:grid-cols-2 gap-8">
+              {valueProps.map((item, idx) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.08 }}
+                  className="flex items-start gap-3.5"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#eefaf4] text-[#1dbf73] flex items-center justify-center shrink-0 text-xl font-bold">
+                    <item.icon />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-[#222325] leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-[#62646a] mt-1.5 leading-relaxed">
+                      {item.text}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-            <h3 className="font-display font-bold text-xl mb-2">{p.title}</h3>
-            <p className="text-sm text-ink/60 leading-relaxed">{p.text}</p>
-          </motion.div>
-        ))}
+          </div>
+
+          {/* Right Video / Visual Banner */}
+          <div className="lg:col-span-5">
+            <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+              <img
+                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80"
+                alt="Workforce pro in action"
+                className="w-full h-80 object-cover"
+              />
+              <div className="p-6 bg-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1dbf73]" />
+                  <span className="text-xs font-bold text-[#1dbf73] uppercase tracking-wider">
+                    Workforce Standard
+                  </span>
+                </div>
+                <h4 className="text-lg font-bold text-[#222325]">
+                  Over 98% of orders completed on schedule
+                </h4>
+                <p className="text-xs text-[#62646a] mt-1 leading-relaxed">
+                  Real customers rate our workers after every job. No fake reviews, no unverified accounts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

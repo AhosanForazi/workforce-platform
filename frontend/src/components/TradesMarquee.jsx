@@ -1,35 +1,55 @@
 import React from 'react';
-import { HiOutlineLightningBolt } from 'react-icons/hi';
-import { GiHammerNails, GiWaterDrop, GiPaintRoller, GiPlantWatering, GiBroom } from 'react-icons/gi';
+import { Link } from 'react-router-dom';
+import { GIG_CATEGORIES } from '../utils/demoData';
 
-const trades = [
-  { name: 'Electrician', icon: HiOutlineLightningBolt },
-  { name: 'Plumber', icon: GiWaterDrop },
-  { name: 'Painter', icon: GiPaintRoller },
-  { name: 'Carpenter', icon: GiHammerNails },
-  { name: 'Gardener', icon: GiPlantWatering },
-  { name: 'Cleaner', icon: GiBroom },
-];
+const TradesMarquee = () => {
+  const categories = GIG_CATEGORIES.filter((c) => c.slug);
 
-const Row = () => (
-  <>
-    {trades.map((t) => (
-      <div key={t.name} className="flex items-center gap-3 px-8 shrink-0">
-        <t.icon className="text-2xl text-hazard" />
-        <span className="font-display font-semibold text-2xl tracking-wide text-ink/70">{t.name}</span>
-        <span className="text-ink/20 text-xl">/</span>
+  return (
+    <section className="py-12 bg-white border-b border-[#efeff0]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#222325]">
+            Popular services
+          </h2>
+          <Link
+            to="/browse"
+            className="text-sm font-semibold text-[#1dbf73] hover:underline"
+          >
+            See all categories &rarr;
+          </Link>
+        </div>
+
+        {/* Categories Grid (Fiverr Style Cards) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              to={`/browse?service=${cat.slug}`}
+              className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-[#e4e5e7] hover:border-[#1dbf73] bg-white flex flex-col"
+            >
+              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
+                <img
+                  src={cat.img}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <span className="absolute bottom-2 left-2 text-xl">{cat.icon}</span>
+              </div>
+              <div className="p-2.5">
+                <p className="text-xs font-bold text-[#222325] group-hover:text-[#1dbf73] transition-colors line-clamp-1">
+                  {cat.name}
+                </p>
+                <p className="text-[10px] text-[#74767e] mt-0.5 font-medium">Explore Gigs &rarr;</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-    ))}
-  </>
-);
-
-const TradesMarquee = () => (
-  <div className="bg-panel border-y border-ink/10 py-6 overflow-hidden">
-    <div className="flex w-max animate-marquee">
-      <Row />
-      <Row />
-    </div>
-  </div>
-);
+    </section>
+  );
+};
 
 export default TradesMarquee;

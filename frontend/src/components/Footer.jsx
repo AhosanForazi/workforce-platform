@@ -1,47 +1,118 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi';
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaPinterestP,
+} from 'react-icons/fa';
+import { GIG_CATEGORIES } from '../utils/demoData';
 
 const Footer = () => (
-  <footer className="bg-ink text-concrete/80 mt-24">
-    <div className="max-w-7xl mx-auto px-5 md:px-8 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-8 h-8 rounded-md bg-hazard flex items-center justify-center font-display font-bold text-ink">W</span>
-          <span className="font-display font-bold text-xl text-concrete">WORK<span className="text-hazard">FORCE</span></span>
+  <footer className="bg-white border-t border-[#e4e5e7] text-[#74767e] text-sm mt-20">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      {/* 5 Columns of Footer Links */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        {/* Col 1: Categories */}
+        <div>
+          <h4 className="font-bold text-[#404145] text-sm mb-4">Categories</h4>
+          <ul className="space-y-2.5 text-xs">
+            {GIG_CATEGORIES.slice(1).map((cat) => (
+              <li key={cat.id}>
+                <Link
+                  to={`/browse?service=${cat.slug}`}
+                  className="hover:text-[#1dbf73] transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
-        <p className="text-sm leading-relaxed text-concrete/60 max-w-xs">
-          The on-demand dispatch board connecting verified local workers with the people who need them — now.
-        </p>
+
+        {/* Col 2: About */}
+        <div>
+          <h4 className="font-bold text-[#404145] text-sm mb-4">About</h4>
+          <ul className="space-y-2.5 text-xs">
+            <li><Link to="/" className="hover:text-[#1dbf73]">Careers</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Press & News</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Partnerships</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Privacy Policy</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Terms of Service</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Intellectual Property</Link></li>
+          </ul>
+        </div>
+
+        {/* Col 3: Support */}
+        <div>
+          <h4 className="font-bold text-[#404145] text-sm mb-4">Support & Education</h4>
+          <ul className="space-y-2.5 text-xs">
+            <li><Link to="/" className="hover:text-[#1dbf73]">Help & Support</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Trust & Safety</Link></li>
+            <li><Link to="/browse" className="hover:text-[#1dbf73]">Selling on Workforce</Link></li>
+            <li><Link to="/browse" className="hover:text-[#1dbf73]">Buying on Workforce</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Workforce Guides</Link></li>
+          </ul>
+        </div>
+
+        {/* Col 4: Community */}
+        <div>
+          <h4 className="font-bold text-[#404145] text-sm mb-4">Community</h4>
+          <ul className="space-y-2.5 text-xs">
+            <li><Link to="/" className="hover:text-[#1dbf73]">Customer Stories</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Community Hub</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Forum & Help</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Events & Meetups</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Creator Program</Link></li>
+          </ul>
+        </div>
+
+        {/* Col 5: Business */}
+        <div>
+          <h4 className="font-bold text-[#404145] text-sm mb-4">Business Solutions</h4>
+          <ul className="space-y-2.5 text-xs">
+            <li>
+              <Link to="/browse" className="font-semibold text-[#222325] hover:text-[#1dbf73] flex items-center gap-1">
+                Workforce Pro <span className="bg-[#1dbf73] text-white text-[9px] px-1 py-0.2 rounded">PRO</span>
+              </Link>
+            </li>
+            <li><Link to="/register" className="hover:text-[#1dbf73]">Become a Worker</Link></li>
+            <li><Link to="/browse" className="hover:text-[#1dbf73]">Enterprise Hiring</Link></li>
+            <li><Link to="/" className="hover:text-[#1dbf73]">Contact Sales</Link></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h4 className="font-display text-lg tracking-wide text-concrete mb-4">Platform</h4>
-        <ul className="space-y-2 text-sm text-concrete/60">
-          <li><Link to="/browse" className="hover:text-hazard transition-colors">Find a worker</Link></li>
-          <li><Link to="/register" className="hover:text-hazard transition-colors">Join as a worker</Link></li>
-          <li><Link to="/dashboard" className="hover:text-hazard transition-colors">Dashboard</Link></li>
-        </ul>
+
+      {/* Bottom Sub-footer */}
+      <div className="pt-8 border-t border-[#efeff0] flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link to="/" className="font-black text-2xl text-[#222325] tracking-tight">
+            workforce<span className="text-[#1dbf73]">.</span>
+          </Link>
+          <span className="text-xs text-[#74767e]">
+            © {new Date().getFullYear()} Workforce International Ltd. All rights reserved.
+          </span>
+        </div>
+
+        {/* Social Icons & Currency */}
+        <div className="flex items-center gap-5 text-gray-500">
+          <div className="flex items-center gap-4 text-base">
+            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-[#1dbf73]"><FaTwitter /></a>
+            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-[#1dbf73]"><FaFacebookF /></a>
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="hover:text-[#1dbf73]"><FaLinkedinIn /></a>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#1dbf73]"><FaInstagram /></a>
+            <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="hover:text-[#1dbf73]"><FaPinterestP /></a>
+          </div>
+
+          <div className="h-4 w-px bg-gray-300 hidden sm:block" />
+
+          <div className="text-xs font-semibold text-[#404145] hidden sm:flex items-center gap-2">
+            <span>🌐 English</span>
+            <span>৳ BDT</span>
+          </div>
+        </div>
       </div>
-      <div>
-        <h4 className="font-display text-lg tracking-wide text-concrete mb-4">Trades</h4>
-        <ul className="space-y-2 text-sm text-concrete/60">
-          <li>Electrician</li>
-          <li>Plumber</li>
-          <li>Painter</li>
-          <li>Carpenter &amp; more</li>
-        </ul>
-      </div>
-      <div>
-        <h4 className="font-display text-lg tracking-wide text-concrete mb-4">Contact</h4>
-        <ul className="space-y-3 text-sm text-concrete/60">
-          <li className="flex items-center gap-2"><HiOutlineMail /> dispatch@workforce.app</li>
-          <li className="flex items-center gap-2"><HiOutlinePhone /> +880 1XXX-XXXXXX</li>
-          <li className="flex items-center gap-2"><HiOutlineLocationMarker /> Faridpur, Dhaka Division</li>
-        </ul>
-      </div>
-    </div>
-    <div className="border-t border-concrete/10 py-5 text-center text-xs text-concrete/40 font-mono">
-      © {new Date().getFullYear()} WORKFORCE — On-Demand Workforce Management System · Built for the Local Worker Hiring Platform project
     </div>
   </footer>
 );

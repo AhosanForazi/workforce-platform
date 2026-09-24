@@ -2,22 +2,33 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { HiOutlineUser, HiOutlineMail, HiOutlineLockClosed, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi';
+import {
+  HiOutlineUser,
+  HiOutlineMail,
+  HiOutlineLockClosed,
+  HiOutlinePhone,
+  HiOutlineLocationMarker,
+} from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const { register, loading } = useAuth();
   const navigate = useNavigate();
-  const [role, setRole] = useState('customer');
+  const [role, setRole] = useState('customer'); // 'customer' (Buyer) | 'worker' (Seller)
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', password: '', location: '', service_type: 'Electrician',
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    location: '',
+    service_type: 'Electrician',
   });
 
   const submit = async (e) => {
     e.preventDefault();
     try {
       await register({ ...form, role });
-      toast.success('Account created — welcome to WorkForce!');
+      toast.success('Account created — welcome to Workforce!');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
@@ -25,96 +36,153 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[80vh] blueprint-bg flex items-center justify-center px-5 py-16">
+    <div className="min-h-[85vh] bg-[#f7f7f7] flex items-center justify-center px-4 py-16">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="ticket w-full max-w-lg shadow-ticket p-8"
+        className="bg-white border border-[#e4e5e7] rounded-xl shadow-fiverr w-full max-w-lg p-8"
       >
-        <span className="font-mono text-xs tracking-widest text-hazard">// NEW JOB TICKET</span>
-        <h1 className="font-display font-bold text-3xl mt-1 mb-6">Create your account.</h1>
+        <div className="text-center mb-6">
+          <Link to="/" className="inline-block font-extrabold text-3xl tracking-tight text-[#222325]">
+            workforce<span className="text-[#1dbf73]">.</span>
+          </Link>
+          <h1 className="text-xl font-bold text-[#222325] mt-2">Create a new account</h1>
+          <p className="text-xs text-[#74767e] mt-1">
+            Already have an account?{' '}
+            <Link to="/login" className="text-[#1dbf73] font-bold hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
 
-        <div className="flex gap-2 mb-6 bg-concrete rounded-lg p-1">
-          {['customer', 'worker'].map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRole(r)}
-              className={`flex-1 py-2 rounded-md text-sm font-bold capitalize transition-colors ${
-                role === r ? 'bg-hazard text-ink' : 'text-ink/50 hover:text-ink'
-              }`}
-            >
-              I'm a {r}
-            </button>
-          ))}
+        {/* Account Mode Switcher (Buyer vs Seller) */}
+        <div className="flex gap-2 mb-6 bg-[#f7f7f7] rounded-lg p-1 border border-[#efeff0]">
+          <button
+            type="button"
+            onClick={() => setRole('customer')}
+            className={`flex-1 py-2.5 rounded text-xs font-bold transition-all ${
+              role === 'customer'
+                ? 'bg-white text-[#222325] shadow-sm'
+                : 'text-[#74767e] hover:text-[#222325]'
+            }`}
+          >
+            I'm a Buyer (Hiring)
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('worker')}
+            className={`flex-1 py-2.5 rounded text-xs font-bold transition-all ${
+              role === 'worker'
+                ? 'bg-white text-[#1dbf73] shadow-sm'
+                : 'text-[#74767e] hover:text-[#222325]'
+            }`}
+          >
+            I'm a Seller (Worker Pro)
+          </button>
         </div>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-semibold">Full name</label>
-              <div className="mt-1 flex items-center gap-2 border border-ink/15 rounded-lg px-3 py-2.5 focus-within:border-hazard">
-                <HiOutlineUser className="text-ink/40" />
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full outline-none bg-transparent" placeholder="Jane Doe" />
+              <label className="block text-xs font-bold text-[#222325] mb-1">Full Name</label>
+              <div className="flex items-center gap-2 border border-[#b5b6ba] focus-within:border-[#1dbf73] rounded-md px-3 py-2 bg-white">
+                <HiOutlineUser className="text-gray-400 text-lg" />
+                <input
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full text-xs text-[#222325] focus:outline-none"
+                  placeholder="e.g. John Doe"
+                />
               </div>
             </div>
+
             <div>
-              <label className="text-sm font-semibold">Phone</label>
-              <div className="mt-1 flex items-center gap-2 border border-ink/15 rounded-lg px-3 py-2.5 focus-within:border-hazard">
-                <HiOutlinePhone className="text-ink/40" />
-                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full outline-none bg-transparent" placeholder="+8801XXXXXXXXX" />
+              <label className="block text-xs font-bold text-[#222325] mb-1">Email Address</label>
+              <div className="flex items-center gap-2 border border-[#b5b6ba] focus-within:border-[#1dbf73] rounded-md px-3 py-2 bg-white">
+                <HiOutlineMail className="text-gray-400 text-lg" />
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full text-xs text-[#222325] focus:outline-none"
+                  placeholder="name@example.com"
+                />
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-semibold">Email</label>
-            <div className="mt-1 flex items-center gap-2 border border-ink/15 rounded-lg px-3 py-2.5 focus-within:border-hazard">
-              <HiOutlineMail className="text-ink/40" />
-              <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full outline-none bg-transparent" placeholder="you@example.com" />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-[#222325] mb-1">Phone Number</label>
+              <div className="flex items-center gap-2 border border-[#b5b6ba] focus-within:border-[#1dbf73] rounded-md px-3 py-2 bg-white">
+                <HiOutlinePhone className="text-gray-400 text-lg" />
+                <input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="w-full text-xs text-[#222325] focus:outline-none"
+                  placeholder="+880 1XXX-XXXXXX"
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="text-sm font-semibold">Location</label>
-            <div className="mt-1 flex items-center gap-2 border border-ink/15 rounded-lg px-3 py-2.5 focus-within:border-hazard">
-              <HiOutlineLocationMarker className="text-ink/40" />
-              <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full outline-none bg-transparent" placeholder="Faridpur, Dhaka Division" />
+            <div>
+              <label className="block text-xs font-bold text-[#222325] mb-1">Location / Area</label>
+              <div className="flex items-center gap-2 border border-[#b5b6ba] focus-within:border-[#1dbf73] rounded-md px-3 py-2 bg-white">
+                <HiOutlineLocationMarker className="text-gray-400 text-lg" />
+                <input
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  className="w-full text-xs text-[#222325] focus:outline-none"
+                  placeholder="Faridpur / Dhaka"
+                />
+              </div>
             </div>
           </div>
 
           {role === 'worker' && (
             <div>
-              <label className="text-sm font-semibold">Primary trade</label>
+              <label className="block text-xs font-bold text-[#222325] mb-1">Your Primary Trade / Skill</label>
               <select
                 value={form.service_type}
                 onChange={(e) => setForm({ ...form, service_type: e.target.value })}
-                className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
+                className="w-full border border-[#b5b6ba] focus:border-[#1dbf73] rounded-md px-3 py-2 text-xs text-[#222325] focus:outline-none bg-white"
               >
-                {['Electrician', 'Plumber', 'Painter', 'Carpenter', 'Gardener', 'Cleaner'].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
+                <option value="Electrician">Electrician & Wiring</option>
+                <option value="Plumber">Plumbing & Water</option>
+                <option value="Painter">Painting & Walls</option>
+                <option value="Carpenter">Carpentry & Woodwork</option>
+                <option value="Cleaner">Home Deep Cleaning</option>
+                <option value="Gardener">Gardening & Landscaping</option>
+                <option value="Technician">AC & Appliance Repair</option>
               </select>
             </div>
           )}
 
           <div>
-            <label className="text-sm font-semibold">Password</label>
-            <div className="mt-1 flex items-center gap-2 border border-ink/15 rounded-lg px-3 py-2.5 focus-within:border-hazard">
-              <HiOutlineLockClosed className="text-ink/40" />
-              <input required minLength={6} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full outline-none bg-transparent" placeholder="At least 6 characters" />
+            <label className="block text-xs font-bold text-[#222325] mb-1">Password</label>
+            <div className="flex items-center gap-2 border border-[#b5b6ba] focus-within:border-[#1dbf73] rounded-md px-3 py-2 bg-white">
+              <HiOutlineLockClosed className="text-gray-400 text-lg" />
+              <input
+                required
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full text-xs text-[#222325] focus:outline-none"
+                placeholder="At least 6 characters"
+              />
             </div>
           </div>
 
-          <button disabled={loading} className="w-full py-3 rounded-lg bg-hazard font-bold hover:bg-ink hover:text-hazard transition-colors disabled:opacity-60">
-            {loading ? 'Creating account…' : `Create ${role} account`}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded bg-[#1dbf73] hover:bg-[#19a463] text-white font-bold text-sm tracking-wide transition-colors shadow-sm disabled:opacity-50"
+          >
+            {loading ? 'Creating Account…' : 'Join Workforce'}
           </button>
         </form>
-
-        <p className="mt-6 text-sm text-center text-ink/60">
-          Already registered?{' '}
-          <Link to="/login" className="text-hazard font-semibold">Log in</Link>
-        </p>
       </motion.div>
     </div>
   );

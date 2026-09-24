@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     "name" TEXT NOT NULL,
     "email" TEXT UNIQUE NOT NULL,
-    "phone" TEXT UNIQUE,
+    "phone" TEXT,
     "password" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'customer',
     "location" TEXT NOT NULL DEFAULT '',

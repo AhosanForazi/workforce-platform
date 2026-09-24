@@ -7,62 +7,47 @@ html {
 }
 
 body {
-  @apply bg-concrete text-ink font-body antialiased;
+  @apply bg-white text-fiverrText font-body antialiased;
 }
 
 ::selection {
-  background: #FF6A2B;
-  color: #181611;
+  background: #1dbf73;
+  color: #ffffff;
 }
 
 .font-display {
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.01em;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
-/* Ticket / work-order card signature element */
+/* Fiverr-style card container */
+.fiverr-card {
+  background: #ffffff;
+  border: 1px solid #e4e5e7;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fiverr-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+  border-color: #dadbdd;
+}
+
+/* Backward compatibility for .ticket class if referenced */
 .ticket {
   position: relative;
-  background: #FFFFFF;
-  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e4e5e7;
+  border-radius: 8px;
 }
-.ticket::before,
-.ticket::after {
-  content: '';
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  background: #F6F3EC;
-  border-radius: 999px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.ticket::before { left: -11px; }
-.ticket::after { right: -11px; }
 
 .ticket-perf {
-  border-top: 2px dashed rgba(24,22,17,0.15);
-}
-
-.blueprint-bg {
-  background-color: #F6F3EC;
-  background-image:
-    linear-gradient(rgba(31,58,95,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(31,58,95,0.07) 1px, transparent 1px);
-  background-size: 34px 34px;
-}
-
-.stamp {
-  border: 2px solid currentColor;
-  border-radius: 8px;
-  transform: rotate(-4deg);
+  border-top: 1px solid #efeff0;
 }
 
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
 :focus-visible {
-  outline: 3px solid #FF6A2B;
+  outline: 2px solid #1dbf73;
   outline-offset: 2px;
 }
 

@@ -1,49 +1,75 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import {
-  HiOutlineLocationMarker,
-  HiOutlineSparkles,
-  HiOutlineBadgeCheck,
-  HiOutlineCurrencyDollar,
-  HiOutlineStar,
-  HiOutlineLockClosed,
-} from 'react-icons/hi';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import GigCard from './GigCard';
+import { DEMO_WORKERS } from '../utils/demoData';
 
-const features = [
-  { icon: HiOutlineLocationMarker, title: 'Location Intelligence', text: 'GPS-powered discovery finds nearby workers within a customizable radius, streamlining your search.' },
-  { icon: HiOutlineSparkles, title: 'Smart Matching', text: 'An algorithm weighs skill match, availability and preferences to surface the right worker fast.' },
-  { icon: HiOutlineBadgeCheck, title: 'Worker Verification', text: 'Multi-step credential validation and background checks keep the marketplace trustworthy.' },
-  { icon: HiOutlineCurrencyDollar, title: 'Transparent Pricing', text: 'A clear cost breakdown shows before you confirm — no surprise call-out fees, ever.' },
-  { icon: HiOutlineStar, title: 'Quality Assurance', text: 'A real review system and a fast dispute process protect both sides of every job.' },
-  { icon: HiOutlineLockClosed, title: 'Security Features', text: 'Encrypted data and secure transactions protect your privacy from booking to payment.' },
+const TABS = [
+  { id: 'all', label: 'All Gigs' },
+  { id: 'Electrician', label: '⚡ Electrical' },
+  { id: 'Plumber', label: '🔧 Plumbing' },
+  { id: 'Painter', label: '🎨 Painting' },
+  { id: 'Carpenter', label: '🔨 Carpentry' },
+  { id: 'Cleaner', label: '🧹 Cleaning' },
 ];
 
-const FeaturesSection = () => (
-  <section className="bg-ink text-concrete py-24">
-    <div className="max-w-7xl mx-auto px-5 md:px-8">
-      <div className="mb-14">
-        <span className="font-mono text-xs tracking-widest text-hazard">// FEATURE DEEP DIVE</span>
-        <h2 className="font-display font-bold text-4xl md:text-5xl mt-2">Built like a dispatch system.</h2>
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-concrete/10 rounded-2xl overflow-hidden">
-        {features.map((f, i) => (
-          <motion.div
-            key={f.title}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
-            className="bg-ink p-8 hover:bg-[#221f18] transition-colors relative"
+const FeaturesSection = () => {
+  const [activeTab, setActiveTab] = useState('all');
+
+  const filteredWorkers =
+    activeTab === 'all'
+      ? DEMO_WORKERS
+      : DEMO_WORKERS.filter((w) => w.service_type === activeTab);
+
+  return (
+    <section className="py-16 bg-white border-b border-[#efeff0]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <span className="text-xs font-bold text-[#1dbf73] uppercase tracking-wider">
+              Hand-picked for you
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#222325] mt-1">
+              Popular Gigs in your area
+            </h2>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-[#222325] text-white shadow-sm'
+                    : 'bg-[#f7f7f7] text-[#62646a] hover:bg-gray-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Gigs Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredWorkers.slice(0, 8).map((worker, i) => (
+            <GigCard key={worker._id} worker={worker} index={i} />
+          ))}
+        </div>
+
+        {/* Explore more button */}
+        <div className="mt-12 text-center">
+          <Link
+            to="/browse"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded border border-[#222325] hover:bg-[#222325] hover:text-white text-sm font-bold text-[#222325] transition-all duration-200"
           >
-            <span className="font-mono text-hazard text-sm">{String(i + 1).padStart(2, '0')}</span>
-            <f.icon className="text-3xl my-4 text-hazard" />
-            <h3 className="font-display font-bold text-2xl mb-2">{f.title}</h3>
-            <p className="text-sm text-concrete/60 leading-relaxed">{f.text}</p>
-          </motion.div>
-        ))}
+            Explore More Gigs
+          </Link>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default FeaturesSection;

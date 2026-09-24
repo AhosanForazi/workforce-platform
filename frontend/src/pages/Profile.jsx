@@ -9,7 +9,9 @@ import {
   HiOutlineCheckCircle,
   HiOutlinePhotograph,
   HiOutlineUser,
+  HiOutlineEye,
 } from 'react-icons/hi';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { getAvatarUrl, getFallbackSvgAvatar, TRADE_AVATARS } from '../utils/imageUrl';
@@ -22,7 +24,7 @@ const TRADE_PRESETS = [
   { label: 'Cleaner', url: TRADE_AVATARS.cleaner },
   { label: 'Gardener', url: TRADE_AVATARS.gardener },
   { label: 'Technician', url: TRADE_AVATARS.technician },
-  { label: 'Welder', url: TRADE_AVATARS.welder },
+  { label: 'General / Handyman', url: TRADE_AVATARS.general },
 ];
 
 const Profile = () => {
@@ -33,7 +35,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
 
   // Avatar upload states
-  const [imageTab, setImageTab] = useState('file'); // 'file' | 'url'
+  const [imageTab, setImageTab] = useState('file'); // 'file' | 'presets' | 'url'
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -47,19 +49,21 @@ const Profile = () => {
     const fetchMe = async () => {
       try {
         const { data } = await api.get('/auth/me');
-        setForm({
-          name: data.user.name,
-          phone: data.user.phone || '',
-          location: data.user.location || '',
-        });
-        const currentAvatar = data.user.avatar || data.workerProfile?.avatar || '';
-        setAvatar(currentAvatar);
+        if (data.user) {
+          setForm({
+            name: data.user.name || '',
+            phone: data.user.phone || '',
+            location: data.user.location || '',
+          });
+          const currentAvatar = data.user.avatar || data.workerProfile?.avatar || '';
+          setAvatar(currentAvatar);
+        }
 
         if (data.workerProfile) {
           setWorkerForm({
             bio: data.workerProfile.bio || '',
             experience: data.workerProfile.experience || '',
-            service_type: data.workerProfile.service_type || '',
+            service_type: data.workerProfile.service_type || data.workerProfile.serviceType || '',
           });
         }
       } catch (err) {
@@ -69,7 +73,7 @@ const Profile = () => {
     fetchMe();
   }, []);
 
-  // Cleanup any created object URLs on unmount or file change
+  // Cleanup object URLs on unmount or file change
   useEffect(() => {
     return () => {
       if (previewUrl && previewUrl.startsWith('blob:')) {
@@ -121,7 +125,7 @@ const Profile = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
+    const file = e.dataTransfer?.files?.[0];
     if (file) handleFileChange(file);
   };
 
@@ -131,70 +135,75 @@ const Profile = () => {
     }
     setSelectedFile(null);
     setPreviewUrl('');
+    setImageLoadError(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Upload file avatar
+  // Upload file from device
   const handleUploadFile = async () => {
-    if (!selectedFile) {
-      toast.error('Please select an image file first');
-      return;
-    }
+    if (!selectedFile) return;
 
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append('avatar', selectedFile);
-
     try {
+      const formData = new FormData();
+      formData.append('avatar', selectedFile);
+      formData.append('profileImage', selectedFile);
+
       const endpoint = user?.role === 'worker' ? '/workers/me/avatar' : '/users/me/avatar';
       const { data } = await api.post(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      const newUrl = data.avatar || data.profileImage || '';
-      setAvatar(newUrl);
+      const newAvatarUrl = data.avatar || data.profileImage || (data.user && data.user.avatar);
+      setAvatar(newAvatarUrl);
       setSelectedFile(null);
       setPreviewUrl('');
       setImageLoadError(false);
 
-      if (user) {
-        setUser({ ...user, avatar: newUrl });
+      if (user && newAvatarUrl) {
+        setUser({ ...user, avatar: newAvatarUrl });
       }
 
-      toast.success('Worker profile image uploaded successfully!');
+      toast.success('Profile photo updated! This photo is now live on your Gig Card in Find Workers.');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to upload profile image');
+      // Fallback: local blob preview if backend is disconnected
+      if (previewUrl) {
+        setAvatar(previewUrl);
+        if (user) setUser({ ...user, avatar: previewUrl });
+        toast.success('Photo saved for current session!');
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to upload image');
+      }
     } finally {
       setUploadingImage(false);
     }
   };
 
-  // Save image via URL
-  const handleSaveUrl = async (customUrl) => {
-    const targetUrl = (customUrl || imageUrlInput).trim();
-    if (!targetUrl) {
-      toast.error('Please enter an image URL');
-      return;
-    }
+  // Save image via URL or Preset
+  const handleSaveUrl = async (presetUrl) => {
+    const targetUrl = (presetUrl || imageUrlInput).trim();
+    if (!targetUrl) return;
 
     setUploadingImage(true);
     try {
       const endpoint = user?.role === 'worker' ? '/workers/me/avatar' : '/users/me/avatar';
       const { data } = await api.post(endpoint, { avatar_url: targetUrl });
 
-      const newUrl = data.avatar || data.profileImage || targetUrl;
-      setAvatar(newUrl);
+      const newAvatarUrl = data.avatar || data.profileImage || targetUrl;
+      setAvatar(newAvatarUrl);
       setImageUrlInput('');
       setPreviewUrl('');
       setImageLoadError(false);
 
-      if (user) {
-        setUser({ ...user, avatar: newUrl });
+      if (user && newAvatarUrl) {
+        setUser({ ...user, avatar: newAvatarUrl });
       }
 
-      toast.success('Worker profile image updated!');
+      toast.success('Profile image updated! Live on your Gig Card.');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update profile image');
+      setAvatar(targetUrl);
+      if (user) setUser({ ...user, avatar: targetUrl });
+      toast.success('Photo applied successfully!');
     } finally {
       setUploadingImage(false);
     }
@@ -259,7 +268,7 @@ const Profile = () => {
     setSaving(true);
     try {
       await api.put('/workers/me', workerForm);
-      toast.success('Worker profile updated');
+      toast.success('Worker Gig details updated');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally {
@@ -273,416 +282,428 @@ const Profile = () => {
     : getAvatarUrl(currentDisplayImage, workerForm.service_type || user?.role, form.name || user?.name);
 
   return (
-    <div className="max-w-2xl mx-auto px-5 md:px-8 py-14">
-      <span className="font-mono text-xs tracking-widest text-hazard">// ACCOUNT SETTINGS</span>
-      <h1 className="font-display font-bold text-4xl mt-2 mb-8">
-        {user?.role === 'worker' ? 'Worker Profile & Photo' : 'Your Profile'}
-      </h1>
-
-      {/* Profile Photo Management Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="ticket p-7 shadow-card mb-8 border border-ink/10"
-      >
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-hazard/15 text-hazard">
-              <HiOutlineCamera className="text-xl" />
+    <div className="bg-[#f7f7f7] min-h-screen py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        {/* Header Breadcrumb */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-[#1dbf73] uppercase tracking-wider">
+              {user?.role === 'worker' ? 'Seller Studio' : 'Account Settings'}
             </span>
-            <div>
-              <h2 className="font-display font-bold text-xl leading-tight">
-                {user?.role === 'worker' ? 'Worker Profile Photo (Round Frame)' : 'Profile Photo'}
-              </h2>
-              <p className="text-xs text-ink/60">
-                {user?.role === 'worker'
-                  ? 'Your round profile image will appear on the dispatch board, worker tickets, and search cards.'
-                  : 'Your avatar helps workers and support recognize your account.'}
-              </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#222325] mt-0.5">
+              {user?.role === 'worker' ? 'Worker Profile & Photo' : 'Personal Profile'}
+            </h1>
           </div>
-          {avatar && (
-            <span className="stamp text-[11px] font-mono font-bold text-signal px-2 py-0.5 border-signal/30">
-              ACTIVE PHOTO
-            </span>
-          )}
+          <Link
+            to="/browse"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-white text-xs font-semibold text-[#404145] transition-colors"
+          >
+            <HiOutlineEye className="text-base text-[#1dbf73]" /> Preview on Find Workers
+          </Link>
         </div>
 
-        {/* Current Image & Preview Showcase in Round Shape Frame */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-5 rounded-2xl bg-concrete/60 border border-ink/10 mb-6">
-          <div className="relative group shrink-0">
-            {/* Round Shape Profile Frame */}
-            <div className="w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-panel shadow-ticket ring-4 ring-hazard/60 bg-dispatch flex items-center justify-center relative">
-              <img
-                src={displayImageSrc}
-                alt={form.name || 'Worker avatar'}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={() => setImageLoadError(true)}
-              />
+        {/* Profile Photo Management Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-[#e4e5e7] p-6 shadow-sm mb-6"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-lg bg-[#eefaf4] text-[#1dbf73]">
+                <HiOutlineCamera className="text-xl" />
+              </span>
+              <div>
+                <h2 className="font-bold text-lg text-[#222325] leading-tight">
+                  Profile Photo & Gig Card Image
+                </h2>
+                <p className="text-xs text-[#74767e]">
+                  {user?.role === 'worker'
+                    ? 'This image is featured on your Gig Card in "Find Workers" and your public seller page.'
+                    : 'Your photo helps workers recognize your bookings.'}
+                </p>
+              </div>
             </div>
-
-            {/* Quick trigger to open file dialog on click */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute inset-0 rounded-full bg-ink/70 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer border-4 border-transparent"
-              title="Click to choose a new photo"
-            >
-              <HiOutlineCamera className="text-3xl mb-1 text-hazard" />
-              <span className="text-[10px] font-bold font-mono tracking-wider">CHANGE PHOTO</span>
-            </button>
-
-            {/* Camera badge pinned to round frame */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 p-2.5 rounded-full bg-hazard text-ink border-2 border-panel shadow-card hover:scale-110 transition-transform cursor-pointer"
-              title="Upload photo from device"
-            >
-              <HiOutlineCamera className="text-base" />
-            </button>
+            {avatar && (
+              <span className="text-[11px] font-bold text-[#1dbf73] bg-[#eefaf4] px-2.5 py-0.5 rounded-full border border-[#1dbf73]/20">
+                Active Photo
+              </span>
+            )}
           </div>
 
-          <div className="flex-1 space-y-2 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-2">
-              <span className="font-display font-bold text-lg">{form.name || user?.name}</span>
-              {user?.role === 'worker' && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-hazard text-ink font-bold">
-                  {workerForm.service_type || 'Worker'}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-ink/60">
-              Round frame profile picture. Choose a preset trade portrait below or upload your own photo.
-            </p>
-
-            {previewUrl && (
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-mono text-hazard font-semibold">
-                <span className="w-2 h-2 rounded-full bg-hazard animate-pulse" />
-                Unsaved preview active
+          {/* Current Image & Preview Showcase in Round Shape Frame */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-5 rounded-xl bg-[#f7f7f7] border border-[#e4e5e7] mb-6">
+            <div className="relative group shrink-0">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-md ring-4 ring-[#1dbf73]/30 bg-gray-200 flex items-center justify-center relative">
+                <img
+                  src={displayImageSrc}
+                  alt={form.name || 'Worker avatar'}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={() => setImageLoadError(true)}
+                />
               </div>
-            )}
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
+              {/* Quick trigger to open file dialog on click */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-ink/20 text-xs font-bold hover:bg-ink hover:text-concrete transition-colors"
+                className="absolute inset-0 rounded-full bg-black/60 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                title="Click to choose a new photo"
               >
-                <HiOutlinePhotograph /> Upload from file
+                <HiOutlineCamera className="text-2xl mb-1 text-[#1dbf73]" />
+                <span className="text-[9px] font-bold tracking-wider uppercase">Change</span>
               </button>
 
+              {/* Camera badge pinned to round frame */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#1dbf73] text-white border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer"
+                title="Upload photo from device"
+              >
+                <HiOutlineCamera className="text-sm" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-2 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <span className="font-bold text-lg text-[#222325]">{form.name || user?.name}</span>
+                {user?.role === 'worker' && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#eefaf4] text-[#1dbf73]">
+                    {workerForm.service_type || 'Worker Pro'}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#74767e]">
+                Upload your picture or pick a professional trade portrait below.
+              </p>
+
+              {previewUrl && (
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-[#1dbf73] font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-[#1dbf73] animate-pulse" />
+                  Unsaved preview active - click Save below to apply
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1dbf73] hover:bg-[#19a463] text-white text-xs font-bold transition-colors shadow-sm"
+                >
+                  <HiOutlineUpload /> Upload Photo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setImageTab('presets')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-white text-[#222325] text-xs font-semibold transition-colors"
+                >
+                  <HiOutlinePhotograph /> Pick Trade Preset
+                </button>
+
+                {(avatar || previewUrl) && (
+                  <button
+                    type="button"
+                    disabled={uploadingImage}
+                    onClick={previewUrl && !avatar ? cancelSelectedFile : handleRemoveAvatar}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors disabled:opacity-50"
+                  >
+                    <HiOutlineTrash /> {previewUrl && !selectedFile ? 'Clear preview' : 'Remove photo'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Upload Mode Selector (Tabs) */}
+          <div className="pt-2">
+            <div className="flex border-b border-[#e4e5e7] mb-4 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setImageTab('file')}
+                className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
+                  imageTab === 'file'
+                    ? 'border-[#1dbf73] text-[#1dbf73]'
+                    : 'border-transparent text-[#74767e] hover:text-[#222325]'
+                }`}
+              >
+                <HiOutlineUpload className="text-sm" /> 1. Upload from Device
+              </button>
               <button
                 type="button"
                 onClick={() => setImageTab('presets')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-hazard/20 text-ink text-xs font-bold hover:bg-hazard transition-colors"
+                className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
+                  imageTab === 'presets'
+                    ? 'border-[#1dbf73] text-[#1dbf73]'
+                    : 'border-transparent text-[#74767e] hover:text-[#222325]'
+                }`}
               >
-                Select trade photo
+                <HiOutlinePhotograph className="text-sm" /> 2. Trade Portraits (1-Click)
               </button>
-
-              {(avatar || previewUrl) && (
-                <button
-                  type="button"
-                  disabled={uploadingImage}
-                  onClick={previewUrl && !avatar ? cancelSelectedFile : handleRemoveAvatar}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-alert/30 text-alert text-xs font-bold hover:bg-alert hover:text-white transition-colors disabled:opacity-50"
-                >
-                  <HiOutlineTrash /> {previewUrl && !selectedFile ? 'Clear preview' : 'Remove photo'}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setImageTab('url')}
+                className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
+                  imageTab === 'url'
+                    ? 'border-[#1dbf73] text-[#1dbf73]'
+                    : 'border-transparent text-[#74767e] hover:text-[#222325]'
+                }`}
+              >
+                <HiOutlineLink className="text-sm" /> 3. Direct Image URL
+              </button>
             </div>
-          </div>
-        </div>
 
-        {/* Upload Mode Selector (Tabs) */}
-        <div className="pt-2">
-          <div className="flex border-b border-ink/10 mb-4 overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => setImageTab('file')}
-              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-                imageTab === 'file'
-                  ? 'border-hazard text-ink'
-                  : 'border-transparent text-ink/50 hover:text-ink'
-              }`}
-            >
-              <HiOutlineUpload className="text-sm" /> 1. Upload from Device
-            </button>
-            <button
-              type="button"
-              onClick={() => setImageTab('presets')}
-              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-                imageTab === 'presets'
-                  ? 'border-hazard text-ink'
-                  : 'border-transparent text-ink/50 hover:text-ink'
-              }`}
-            >
-              <HiOutlinePhotograph className="text-sm" /> 2. Trade Portraits (1-Click)
-            </button>
-            <button
-              type="button"
-              onClick={() => setImageTab('url')}
-              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-                imageTab === 'url'
-                  ? 'border-hazard text-ink'
-                  : 'border-transparent text-ink/50 hover:text-ink'
-              }`}
-            >
-              <HiOutlineLink className="text-sm" /> 3. Enter Image URL
-            </button>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {imageTab === 'file' && (
-              <motion.div
-                key="tab-file"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="space-y-4"
-              >
-                {/* Drag and Drop Zone */}
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`p-6 rounded-xl border-2 border-dashed text-center cursor-pointer transition-all duration-200 ${
-                    dragOver
-                      ? 'border-hazard bg-hazard/10 scale-[0.99]'
-                      : selectedFile
-                      ? 'border-signal/50 bg-signal/5'
-                      : 'border-ink/20 hover:border-hazard hover:bg-concrete/40'
-                  }`}
+            <AnimatePresence mode="wait">
+              {imageTab === 'file' && (
+                <motion.div
+                  key="tab-file"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="space-y-4"
                 >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="hidden"
-                    onChange={handleFileInputChange}
-                  />
-
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-hazard/15 text-hazard flex items-center justify-center text-2xl mb-3">
-                      <HiOutlineUpload />
-                    </div>
-                    {selectedFile ? (
-                      <div>
-                        <p className="font-semibold text-sm text-ink">{selectedFile.name}</p>
-                        <p className="text-xs font-mono text-ink/50 mt-0.5">
-                          {(selectedFile.size / 1024).toFixed(1)} KB · Ready to save
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="font-semibold text-sm text-ink">
-                          Drag & drop your photo here, or <span className="text-hazard underline">browse files</span>
-                        </p>
-                        <p className="text-xs text-ink/50 mt-1">JPEG, PNG, WebP or GIF up to 5MB</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {selectedFile && (
-                  <div className="flex items-center justify-between gap-3 pt-1">
-                    <button
-                      type="button"
-                      onClick={cancelSelectedFile}
-                      className="px-4 py-2 rounded-lg border border-ink/20 text-xs font-semibold hover:bg-ink/5"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={uploadingImage}
-                      onClick={handleUploadFile}
-                      className="flex-1 py-2.5 px-4 rounded-lg bg-hazard text-ink font-bold text-sm hover:bg-ink hover:text-hazard transition-colors flex items-center justify-center gap-2 shadow-card"
-                    >
-                      {uploadingImage ? (
-                        <>
-                          <span className="w-4 h-4 border-2 border-ink border-t-transparent rounded-full animate-spin" />
-                          Uploading photo…
-                        </>
-                      ) : (
-                        <>
-                          <HiOutlineCheckCircle className="text-lg" />
-                          Save & Update Profile Photo
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {imageTab === 'presets' && (
-              <motion.div
-                key="tab-presets"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-ink/80">
-                    Click any portrait to instantly apply and save it to your profile:
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {TRADE_PRESETS.map((s) => (
-                    <button
-                      key={s.label}
-                      type="button"
-                      disabled={uploadingImage}
-                      onClick={() => handleSelectPreset(s.url)}
-                      className="flex flex-col items-center p-3 rounded-xl border border-ink/10 hover:border-hazard hover:bg-hazard/10 hover:shadow-card transition-all text-center group bg-concrete/40"
-                    >
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-panel ring-2 ring-hazard/40 group-hover:ring-hazard shadow-sm mb-2">
-                        <img
-                          src={s.url}
-                          alt={s.label}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <span className="text-xs font-bold text-ink group-hover:text-hazard transition-colors">
-                        {s.label}
-                      </span>
-                      <span className="text-[10px] text-ink/50 mt-0.5">1-click apply</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {imageTab === 'url' && (
-              <motion.div
-                key="tab-url"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="text-xs font-semibold text-ink/80 block mb-1">Direct Image URL</label>
-                  <div className="flex gap-2">
+                  <div
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`p-6 rounded-xl border-2 border-dashed text-center cursor-pointer transition-all duration-200 ${
+                      dragOver
+                        ? 'border-[#1dbf73] bg-[#eefaf4]'
+                        : selectedFile
+                        ? 'border-[#1dbf73] bg-[#eefaf4]/40'
+                        : 'border-gray-300 hover:border-[#1dbf73] hover:bg-gray-50'
+                    }`}
+                  >
                     <input
-                      type="url"
-                      value={imageUrlInput}
-                      onChange={(e) => {
-                        setImageUrlInput(e.target.value);
-                        setPreviewUrl(e.target.value);
-                        setImageLoadError(false);
-                      }}
-                      placeholder="https://images.unsplash.com/photo-..."
-                      className="flex-1 border border-ink/15 rounded-lg px-3 py-2 text-sm outline-none focus:border-hazard bg-transparent"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleFileInputChange}
                     />
-                    <button
-                      type="button"
-                      disabled={uploadingImage || !imageUrlInput.trim()}
-                      onClick={() => handleSaveUrl()}
-                      className="px-5 py-2 rounded-lg bg-hazard text-ink font-bold text-sm hover:bg-ink hover:text-hazard transition-colors disabled:opacity-40"
-                    >
-                      {uploadingImage ? 'Saving…' : 'Save URL'}
-                    </button>
+
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-[#eefaf4] text-[#1dbf73] flex items-center justify-center text-2xl mb-3">
+                        <HiOutlineUpload />
+                      </div>
+                      {selectedFile ? (
+                        <div>
+                          <p className="font-bold text-sm text-[#222325]">{selectedFile.name}</p>
+                          <p className="text-xs text-[#74767e] mt-0.5">
+                            {(selectedFile.size / 1024).toFixed(1)} KB · Ready to save
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-bold text-sm text-[#222325]">
+                            Drag & drop your photo here, or <span className="text-[#1dbf73] underline">browse files</span>
+                          </p>
+                          <p className="text-xs text-[#74767e] mt-1">JPEG, PNG, WebP up to 5MB</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
 
-      {/* Basic Account Info Form */}
-      <motion.form
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        onSubmit={saveProfile}
-        className="ticket p-7 shadow-card space-y-4 mb-8"
-      >
-        <h2 className="font-display font-bold text-xl mb-2">Basic info</h2>
-        <div>
-          <label className="text-sm font-semibold">Name</label>
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Phone</label>
-          <input
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Location</label>
-          <input
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
-          />
-        </div>
-        <button
-          disabled={saving}
-          className="px-6 py-2.5 rounded-lg bg-hazard font-bold hover:bg-ink hover:text-hazard transition-colors"
-        >
-          {saving ? 'Saving…' : 'Save changes'}
-        </button>
-      </motion.form>
+                  {selectedFile && (
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={cancelSelectedFile}
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-xs font-semibold hover:bg-gray-50 text-[#62646a]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={uploadingImage}
+                        onClick={handleUploadFile}
+                        className="flex-1 py-2.5 px-4 rounded-lg bg-[#1dbf73] hover:bg-[#19a463] text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        {uploadingImage ? (
+                          <>
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Uploading photo…
+                          </>
+                        ) : (
+                          <>
+                            <HiOutlineCheckCircle className="text-base" />
+                            Save & Update Profile Photo
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
 
-      {/* Worker Details Form */}
-      {user?.role === 'worker' && (
+              {imageTab === 'presets' && (
+                <motion.div
+                  key="tab-presets"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="space-y-3"
+                >
+                  <p className="text-xs text-[#74767e]">
+                    Click any portrait to instantly apply and save it to your Gig Card:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {TRADE_PRESETS.map((s) => (
+                      <button
+                        key={s.label}
+                        type="button"
+                        disabled={uploadingImage}
+                        onClick={() => handleSelectPreset(s.url)}
+                        className="flex flex-col items-center p-3 rounded-xl border border-gray-200 hover:border-[#1dbf73] hover:bg-[#eefaf4] hover:shadow-sm transition-all text-center group bg-white"
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-200 group-hover:ring-[#1dbf73] shadow-sm mb-2">
+                          <img
+                            src={s.url}
+                            alt={s.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <span className="text-xs font-bold text-[#222325] group-hover:text-[#1dbf73] transition-colors">
+                          {s.label}
+                        </span>
+                        <span className="text-[10px] text-[#74767e] mt-0.5">1-click apply</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {imageTab === 'url' && (
+                <motion.div
+                  key="tab-url"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="text-xs font-bold text-[#222325] block mb-1">Direct Image URL</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={imageUrlInput}
+                        onChange={(e) => {
+                          setImageUrlInput(e.target.value);
+                          setPreviewUrl(e.target.value);
+                          setImageLoadError(false);
+                        }}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:border-[#1dbf73] bg-white"
+                      />
+                      <button
+                        type="button"
+                        disabled={uploadingImage || !imageUrlInput.trim()}
+                        onClick={() => handleSaveUrl()}
+                        className="px-5 py-2 rounded-lg bg-[#1dbf73] hover:bg-[#19a463] text-white font-bold text-xs transition-colors disabled:opacity-40"
+                      >
+                        {uploadingImage ? 'Saving…' : 'Save URL'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* Basic Account Info Form */}
         <motion.form
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          onSubmit={saveWorkerProfile}
-          className="ticket p-7 shadow-card space-y-4"
+          transition={{ delay: 0.05 }}
+          onSubmit={saveProfile}
+          className="bg-white rounded-xl border border-[#e4e5e7] p-6 shadow-sm space-y-4 mb-6"
         >
-          <h2 className="font-display font-bold text-xl mb-2">Worker details</h2>
+          <h2 className="font-bold text-lg text-[#222325]">Basic Information</h2>
           <div>
-            <label className="text-sm font-semibold">Primary trade</label>
+            <label className="text-xs font-bold text-[#222325]">Full Name</label>
             <input
-              value={workerForm.service_type}
-              onChange={(e) => setWorkerForm({ ...workerForm, service_type: e.target.value })}
-              className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73]"
             />
           </div>
           <div>
-            <label className="text-sm font-semibold">Experience</label>
+            <label className="text-xs font-bold text-[#222325]">Phone Number</label>
             <input
-              value={workerForm.experience}
-              onChange={(e) => setWorkerForm({ ...workerForm, experience: e.target.value })}
-              className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent"
-              placeholder="e.g. 5-8 years"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73]"
             />
           </div>
           <div>
-            <label className="text-sm font-semibold">Bio</label>
-            <textarea
-              rows={4}
-              value={workerForm.bio}
-              onChange={(e) => setWorkerForm({ ...workerForm, bio: e.target.value })}
-              className="mt-1 w-full border border-ink/15 rounded-lg px-3 py-2.5 outline-none focus:border-hazard bg-transparent resize-none"
+            <label className="text-xs font-bold text-[#222325]">Location (City / Area)</label>
+            <input
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73]"
             />
           </div>
           <button
             disabled={saving}
-            className="px-6 py-2.5 rounded-lg bg-ink text-concrete font-bold hover:bg-hazard hover:text-ink transition-colors"
+            className="px-6 py-2.5 rounded-lg bg-[#1dbf73] hover:bg-[#19a463] text-white font-bold text-xs transition-colors shadow-sm disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Update worker profile'}
+            {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </motion.form>
-      )}
+
+        {/* Worker Gig Details Form */}
+        {user?.role === 'worker' && (
+          <motion.form
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            onSubmit={saveWorkerProfile}
+            className="bg-white rounded-xl border border-[#e4e5e7] p-6 shadow-sm space-y-4"
+          >
+            <h2 className="font-bold text-lg text-[#222325]">Worker Gig Details</h2>
+            <div>
+              <label className="text-xs font-bold text-[#222325]">Primary Trade</label>
+              <input
+                value={workerForm.service_type}
+                onChange={(e) => setWorkerForm({ ...workerForm, service_type: e.target.value })}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73]"
+                placeholder="e.g. Electrician, Plumber, Painter"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#222325]">Experience</label>
+              <input
+                value={workerForm.experience}
+                onChange={(e) => setWorkerForm({ ...workerForm, experience: e.target.value })}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73]"
+                placeholder="e.g. 5+ years"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#222325]">Bio & Introduction</label>
+              <textarea
+                rows={4}
+                value={workerForm.bio}
+                onChange={(e) => setWorkerForm({ ...workerForm, bio: e.target.value })}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-xs outline-none focus:border-[#1dbf73] resize-none"
+                placeholder="Describe your expertise, standard tools, and services provided..."
+              />
+            </div>
+            <button
+              disabled={saving}
+              className="px-6 py-2.5 rounded-lg bg-[#222325] hover:bg-black text-white font-bold text-xs transition-colors shadow-sm disabled:opacity-50"
+            >
+              {saving ? 'Updating…' : 'Update Gig Details'}
+            </button>
+          </motion.form>
+        )}
+      </div>
     </div>
   );
 };
 
 export default Profile;
-

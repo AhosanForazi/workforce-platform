@@ -12,66 +12,103 @@ const Notifications = () => {
     setLoading(true);
     try {
       const { data } = await api.get('/notifications');
-      setItems(data);
+      setItems(Array.isArray(data) ? data : []);
+    } catch {
+      setItems([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const markAll = async () => {
-    await api.put('/notifications/read-all');
-    load();
+    try {
+      await api.put('/notifications/read-all');
+      load();
+    } catch (e) {
+      console.warn(e);
+    }
   };
 
   const markOne = async (id) => {
-    await api.put(`/notifications/${id}/read`);
-    load();
+    try {
+      await api.put(`/notifications/${id}/read`);
+      load();
+    } catch (e) {
+      console.warn(e);
+    }
   };
 
-  if (loading) return <LoadingSpinner label="Checking the wire…" />;
+  if (loading) return <LoadingSpinner label="Loading notifications…" />;
 
   return (
-    <div className="max-w-3xl mx-auto px-5 md:px-8 py-14">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <span className="font-mono text-xs tracking-widest text-hazard">// ALERTS</span>
-          <h1 className="font-display font-bold text-4xl mt-2">Notifications</h1>
+    <div className="bg-[#f7f7f7] min-h-screen py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold text-[#222325]">Notifications</h1>
+            <p className="text-xs text-[#74767e] mt-0.5">Stay updated on your Gig orders, deliveries, and requests.</p>
+          </div>
+          {items.some((n) => !n.is_read) && (
+            <button
+              onClick={markAll}
+              className="text-xs font-bold text-[#1dbf73] hover:underline"
+            >
+              Mark all as read
+            </button>
+          )}
         </div>
-        {items.some((n) => !n.is_read) && (
-          <button onClick={markAll} className="text-sm font-semibold text-hazard">Mark all as read</button>
+
+        {items.length === 0 ? (
+          <div className="bg-white border border-[#e4e5e7] rounded-xl p-10 text-center text-gray-500 shadow-sm">
+            <HiOutlineBell className="text-4xl mx-auto mb-2 text-[#1dbf73]" />
+            <p className="font-semibold text-sm text-[#222325]">No notifications yet</p>
+            <p className="text-xs text-gray-400 mt-1">When you receive an order update or message, it will show up here.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {items.map((n, i) => (
+              <motion.div
+                key={n._id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3) }}
+                className={`flex items-start gap-3 p-4 rounded-xl border transition-all ${
+                  n.is_read
+                    ? 'border-[#e4e5e7] bg-white text-[#62646a]'
+                    : 'border-[#1dbf73]/40 bg-[#eefaf4] text-[#222325] shadow-sm'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    n.is_read ? 'bg-gray-100 text-gray-400' : 'bg-[#1dbf73] text-white'
+                  }`}
+                >
+                  <HiOutlineBell className="text-base" />
+                </div>
+                <div className="flex-1 text-xs">
+                  <p className="font-medium leading-relaxed">{n.message}</p>
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    {new Date(n.sent_at).toLocaleString()}
+                  </span>
+                </div>
+                {!n.is_read && (
+                  <button
+                    onClick={() => markOne(n._id)}
+                    className="p-1 rounded-full text-gray-400 hover:text-[#1dbf73] transition-colors"
+                    title="Mark read"
+                  >
+                    <HiOutlineCheck className="text-base" />
+                  </button>
+                )}
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
-
-      {items.length === 0 ? (
-        <div className="ticket p-10 text-center text-ink/50">
-          <HiOutlineBell className="text-3xl mx-auto mb-2" /> Nothing here yet.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {items.map((n, i) => (
-            <motion.div
-              key={n._id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: Math.min(i * 0.04, 0.3) }}
-              className={`flex items-start gap-3 p-4 rounded-xl border ${n.is_read ? 'border-ink/5 bg-panel' : 'border-hazard/40 bg-hazard/5'}`}
-            >
-              <span className={`mt-1 w-2 h-2 rounded-full shrink-0 ${n.is_read ? 'bg-ink/20' : 'bg-hazard animate-pulseDot'}`} />
-              <div className="flex-1">
-                <p className="text-sm">{n.message}</p>
-                <p className="text-xs text-ink/40 font-mono mt-1">{new Date(n.sent_at).toLocaleString()}</p>
-              </div>
-              {!n.is_read && (
-                <button onClick={() => markOne(n._id)} className="text-ink/40 hover:text-signal">
-                  <HiOutlineCheck />
-                </button>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
